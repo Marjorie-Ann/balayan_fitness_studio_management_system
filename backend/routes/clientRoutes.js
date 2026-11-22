@@ -26,5 +26,8 @@ clientRoutes.post('/appointments', clientController.requestAppointment);
 clientRoutes.get('/appointments/:clientId', clientController.getAppointments);
 clientRoutes.put('/appointments/change/:appointmentId', clientController.requestScheduleChange);
 
+// 2.4.1 Display fitness progress records
+clientRoutes.get('/progress/:clientId', clientController.getFitnessProgress);
+
 
 export default clientRoutes;
