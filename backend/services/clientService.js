@@ -166,3 +166,16 @@ export const getFitnessProgress = async (clientId) => {
     return progress;
 };
 
+// 2.5.1 Implement client notifications
+export const getNotifications = async (userId) => {
+    const notifications = await clientModel.findNotificationsByUserId(userId);
+    return notifications;
+};
+
+export const markAsRead = async (notificationId) => {
+    const updated = await clientModel.markNotificationAsRead(notificationId);
+    if (updated === 0) {
+        throw new ValidationError("Notification not found", 404);
+    }
+    return "Notification marked as read";
+}; 
