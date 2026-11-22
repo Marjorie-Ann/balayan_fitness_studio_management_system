@@ -9,10 +9,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "dotenv": "^18.0.10",
     "express": "^5.3.0",
     "mysql2": "^3.24.6"
+  },
+  "devDependencies": {
+    "install": "^0.13.0",
+    "npm": "^12.2.3"
   }
 }
