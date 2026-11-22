@@ -19,5 +19,8 @@ clientRoutes.get('/qr/:clientId', clientController.getQrCode);
 // 2.3.1 Display trainer availability
 clientRoutes.get('/availability', clientController.getTrainerAvailability);
 
+// 2.3.2 Implement appointment request
+clientRoutes.post('/appointments', clientController.requestAppointment);
+
 
 export default clientRoutes;
