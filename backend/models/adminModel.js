@@ -150,3 +150,95 @@ export const getAllClients = async () => {
     return rows;
 };
 
+// ==========================================
+// 1.3 MEMBERSHIP MANAGEMENT
+// ==========================================
+
+
+
+// 1.3.1 Create Membership Record
+export const createMembership = async ({ client_id, membership_type, start_date, expiration_date, status }) => {
+    const [result] = await db.query(
+        `INSERT INTO memberships (client_id, membership_type, start_date, expiration_date, status) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [client_id, membership_type, start_date, expiration_date, status]
+    );
+    return result.insertId;
+};
+
+// Get all memberships (with client info)
+export const getAllMemberships = async () => {
+    const [rows] = await db.query(`
+        SELECT 
+            m.membership_id,
+            m.client_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            c.qr_code,
+            m.membership_type,
+            DATE_FORMAT(m.start_date, '%Y-%m-%d') AS start_date,
+            DATE_FORMAT(m.expiration_date, '%Y-%m-%d') AS expiration_date,
+            m.status      
+        FROM memberships m
+        INNER JOIN clients c ON m.client_id = c.client_id
+        ORDER BY m.membership_id DESC
+    `);
+    return rows;
+};
+
+// Find single membership by ID
+export const findMembershipById = async (membershipId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            m.membership_id,
+            m.client_id,
+            c.full_name,
+            m.membership_type,
+            DATE_FORMAT(m.start_date, '%Y-%m-%d') AS start_date,
+            DATE_FORMAT(m.expiration_date, '%Y-%m-%d') AS expiration_date,
+            m.status
+         FROM memberships m
+         INNER JOIN clients c ON m.client_id = c.client_id
+         WHERE m.membership_id = ?`,
+        [membershipId]
+    );
+    return rows[0];
+};
+
+// 1.3.1 Update Membership Record
+export const updateMembershipById = async (membershipId, { membership_type, start_date, expiration_date, status }) => {
+    const [result] = await db.query(
+        `UPDATE memberships 
+         SET membership_type = ?, start_date = ?, expiration_date = ?, status = ?
+         WHERE membership_id = ?`,
+        [membership_type, start_date, expiration_date, status, membershipId]
+    );
+    return result.affectedRows;
+};
+
+export const getAllUsers = async () => {
+    const [rows] = await db.query(`
+        SELECT 
+            u.user_id, u.username, u.role, u.account_status,
+            COALESCE(c.full_name, t.full_name, 'System Admin') AS full_name,
+            COALESCE(c.email, t.email) AS email,
+            COALESCE(c.contact_number, t.contact_number) AS contact_number
+        FROM users u
+        LEFT JOIN clients c ON u.user_id = c.user_id
+        LEFT JOIN trainers t ON u.user_id = t.user_id
+        ORDER BY u.user_id DESC
+    `);
+    return rows;
+};
+
+export const findUserById = async (userId) => {
+    const [rows] = await db.query("SELECT * FROM users WHERE user_id = ?", [userId]);
+    return rows[0];
+};
+
+export const deleteUserById = async (userId) => {
+    const [result] = await db.query("DELETE FROM users WHERE user_id = ?", [userId]);
+    return result.affectedRows;
+};
+

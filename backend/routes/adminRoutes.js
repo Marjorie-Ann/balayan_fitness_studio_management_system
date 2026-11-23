@@ -32,4 +32,8 @@ router.post("/trainers", createTrainerAccount);
 router.get("/users", getAllUsers);
 router.delete("/users/:id", deleteUserAccount);
 
+// 1.3.1 & 1.3.2 Membership Management
+router.post("/memberships", createMembership);
+
+
 export default router;
