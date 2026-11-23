@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import clientRoutes from './routes/clientRoutes.js';
+import trainerRoutes from './routes/trainerRoutes.js';
 import "dotenv/config";
 import "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -24,6 +26,7 @@ app.get('/', (req, res) => {
 /* Routes implementation */
 app.use('/admin', adminRoutes);
 app.use('/client', clientRoutes);
+app.use('/trainer', trainerRoutes);
 
 try {
     const port = process.env.PORT || 3000;
