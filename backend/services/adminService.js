@@ -136,7 +136,25 @@ export const createTrainerAccount = async (data) => {
 // 1.3 MEMBERSHIP MANAGEMENT SERVICES
 // ==========================================
 
+// Helper: 1.3.2 Determine Active or Expired status from start_date & expiration_date
+const computeMembershipStatus = (startDateStr, expirationDateStr) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
+    const start = new Date(startDateStr);
+    const expiration = new Date(expirationDateStr);
+
+    if (isNaN(start.getTime()) || isNaN(expiration.getTime())) {
+        throw new ValidationError("Invalid start_date or expiration_date format. Use YYYY-MM-DD.", 400);
+    }
+
+    if (expiration < start) {
+        throw new ValidationError("Expiration date cannot be earlier than start date.", 400);
+    }
+
+    // Active if expiration date is today or in the future
+    return expiration >= today ? "Active" : "Expired";
+};
 
 // 1.3.1 Create Membership Record
 export const createMembership = async (membershipData) => {
@@ -164,7 +182,11 @@ export const createMembership = async (membershipData) => {
     return await adminModel.findMembershipById(membershipId);
 };
 
-
+// 1.3.2 Get All Memberships (syncs statuses first)
+export const getAllMemberships = async () => {
+    await adminModel.syncMembershipStatuses();
+    return await adminModel.getAllMemberships();
+};
 
 // 1.3.1 & 1.3.2 Update Membership Record
 export const updateMembership = async (membershipId, updateData) => {
