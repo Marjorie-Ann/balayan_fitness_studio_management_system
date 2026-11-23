@@ -207,3 +207,52 @@ export const recordCashPayment = async (req, res) => {
     }
 };
 
+// 1.4.2 View Payment Records (Search & Filter)
+export const getAllPayments = async (req, res) => {
+    try {
+        const { search, date, status } = req.query;
+        const payments = await adminService.getAllPayments({ search, date, status });
+        res.status(200).json({
+            success: true,
+            message: "Payment records retrieved successfully.",
+            data: payments
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve payment records.",
+            error: error.message
+        });
+    }
+};
+
+// Confirm Cash Received (marks Pending payment as Paid)
+export const confirmCashPayment = async (req, res) => {
+    try {
+        const payment = await adminService.confirmCashPayment(req.params.id);
+        res.status(200).json({
+            success: true,
+            message: "Cash payment confirmed and marked as Paid.",
+            data: payment
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to confirm cash payment.",
+            error: error.message
+        });
+    }
+};
+

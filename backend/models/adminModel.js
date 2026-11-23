@@ -298,3 +298,61 @@ export const findPaymentById = async (paymentId) => {
     );
     return rows[0];
 };
+
+// 1.4.2 View Payment Records (with search by client/transaction_id and filter by date/payment_status)
+export const getAllPayments = async ({ search, date, status } = {}) => {
+    let query = `
+        SELECT 
+            p.payment_id,
+            p.transaction_id,
+            p.client_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            p.membership_id,
+            m.membership_type,
+            p.amount,
+            'Cash' AS payment_method,
+            p.payment_status,
+            DATE_FORMAT(p.payment_date, '%Y-%m-%d %H:%i:%s') AS payment_date
+        FROM payments p
+        INNER JOIN clients c ON p.client_id = c.client_id
+        LEFT JOIN memberships m ON p.membership_id = m.membership_id
+        WHERE 1=1
+    `;
+    const params = [];
+
+    // Search by client name or transaction ID
+    if (search && search.trim() !== "") {
+        query += ` AND (c.full_name LIKE ? OR p.transaction_id LIKE ?)`;
+        const wildcard = `%${search.trim()}%`;
+        params.push(wildcard, wildcard);
+    }
+
+    // Filter by specific payment date (YYYY-MM-DD)
+    if (date && date.trim() !== "") {
+        query += ` AND DATE(p.payment_date) = ?`;
+        params.push(date.trim());
+    }
+
+    // Filter by payment status ('Paid' or 'Pending')
+    if (status && status.trim() !== "") {
+        query += ` AND p.payment_status = ?`;
+        params.push(status.trim());
+    }
+
+    query += ` ORDER BY p.payment_id DESC`;
+
+    const [rows] = await db.query(query, params);
+    return rows;
+};
+
+// Optional: Confirm pending payment as Paid
+export const confirmCashPaymentById = async (paymentId) => {
+    const [result] = await db.query(
+        `UPDATE payments SET payment_status = 'Paid' WHERE payment_id = ?`,
+        [paymentId]
+    );
+    return result.affectedRows;
+};
+
