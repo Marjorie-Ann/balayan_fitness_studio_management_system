@@ -154,7 +154,25 @@ export const getAllClients = async () => {
 // 1.3 MEMBERSHIP MANAGEMENT
 // ==========================================
 
+// Check if client exists
+export const findClientById = async (clientId) => {
+    const [rows] = await db.query("SELECT * FROM clients WHERE client_id = ?", [clientId]);
+    return rows[0];
+};
 
+// 1.3.2 Sync expired memberships automatically based on current date
+export const syncMembershipStatuses = async () => {
+    await db.query(`
+        UPDATE memberships 
+        SET status = 'Expired' 
+        WHERE expiration_date < CURDATE() AND status = 'Active'
+    `);
+    await db.query(`
+        UPDATE memberships 
+        SET status = 'Active' 
+        WHERE expiration_date >= CURDATE() AND start_date <= CURDATE() AND status = 'Expired'
+    `);
+};
 
 // 1.3.1 Create Membership Record
 export const createMembership = async ({ client_id, membership_type, start_date, expiration_date, status }) => {

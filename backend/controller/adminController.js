@@ -112,3 +112,66 @@ export const createMembership = async (req, res) => {
     }
 };
 
+// 1.3.2 Get All Memberships (with auto-checked Active/Expired status)
+export const getAllMemberships = async (req, res) => {
+    try {
+        const memberships = await adminService.getAllMemberships();
+        res.status(200).json({
+            success: true,
+            message: "Membership records retrieved successfully.",
+            data: memberships
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve membership records.",
+            error: error.message
+        });
+    }
+};
+
+// 1.3.1 Update Membership
+export const updateMembership = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedMembership = await adminService.updateMembership(id, req.body);
+        res.status(200).json({
+            success: true,
+            message: "Membership record updated successfully.",
+            data: updatedMembership
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to update membership record.",
+            error: error.message
+        });
+    }
+};
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await adminService.getAllUsers();
+        res.status(200).json({ success: true, message: "User accounts retrieved successfully.", data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to retrieve user accounts.", error: error.message });
+    }
+};
+
+export const deleteUserAccount = async (req, res) => {
+    try {
+        const deletedUser = await adminService.deleteUserAccount(req.params.id);
+        res.status(200).json({ success: true, message: "User account deleted successfully.", data: deletedUser });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: "Failed to delete user account.", error: error.message });
+    }
+};
+

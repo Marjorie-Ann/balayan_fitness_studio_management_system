@@ -34,6 +34,8 @@ router.delete("/users/:id", deleteUserAccount);
 
 // 1.3.1 & 1.3.2 Membership Management
 router.post("/memberships", createMembership);
+router.get("/memberships", getAllMemberships);
+router.put("/memberships/:id", updateMembership);
 
 
 export default router;
