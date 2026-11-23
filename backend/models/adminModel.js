@@ -43,3 +43,62 @@ export const countTodayAttendance = async () => {
     return rows[0].total;
 };
 
+// ==================== ACCOUNT CREATION (1.2) ====================
+
+// read - check kung existing na ang username sa users table
+export const findUserByUsername = async (username) => {
+    const [rows] = await pool.query(
+        "SELECT user_id FROM users WHERE username = ?",
+        [username]
+    );
+    return rows[0];
+};
+
+// read - check kung existing na ang email sa clients table
+export const findClientByEmail = async (email) => {
+    const [rows] = await pool.query(
+        "SELECT client_id FROM clients WHERE email = ?",
+        [email]
+    );
+    return rows[0];
+};
+
+// read - check kung existing na ang email sa trainers table
+export const findTrainerByEmail = async (email) => {
+    const [rows] = await pool.query(
+        "SELECT trainer_id FROM trainers WHERE email = ?",
+        [email]
+    );
+    return rows[0];
+};
+
+// insert - 1.2.1 Create Client Account (users + clients table)
+export const insertClientAccount = async (clientData) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Insert sa `users` table
+        const [userResult] = await connection.query(
+            "INSERT INTO users (username, password, role, account_status) VALUES (?, ?, 'Client', 'Active')",
+            [clientData.username, clientData.hashedPassword]
+        );
+        const userId = userResult.insertId;
+
+        // 2. Insert sa `clients` table
+        const [clientResult] = await connection.query(
+            "INSERT INTO clients (user_id, full_name, email, contact_number, qr_code) VALUES (?, ?, ?, ?, ?)",
+            [userId, clientData.full_name, clientData.email, clientData.contact_number, clientData.qr_code]
+        );
+        const clientId = clientResult.insertId;
+
+        await connection.commit();
+        return { user_id: userId, client_id: clientId };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
