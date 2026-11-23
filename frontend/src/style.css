@@ -1,0 +1,126 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: normal;
+    font-family: 'Georgia', serif;
+}
+
+body {
+    padding: 50px;
+}
+
+.image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 14px auto;
+}
+
+
+header {
+    padding: 30px 20px;
+    margin: 20px auto 10px auto;
+    text-align: center;
+}
+
+header > h1 {
+    font-size: 24px;
+    color: rgb(252, 252, 252);
+}
+
+header > small {
+    color: rgb(232, 188, 46);
+}
+
+#formContainer header {
+    padding: 0 0 14px 0;
+    margin: 0 0 14px 0;
+    text-align: center;
+}
+
+#formContainer {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 28px 28px;
+    text-align: left;
+    font-weight: bolder;
+    border-radius: 12px;
+    background: rgb(0, 0, 0);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 1);
+    color: rgb(0, 0, 0);
+}
+
+#formContainer form {
+    margin: 0;
+    padding: 0;
+    color: rgb(252, 252, 252);
+}
+
+#formContainer label {
+    display: block;
+    width: 100%;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: rgb(252, 252, 252);
+}
+
+#formContainer input {
+    display: block;
+    width: 100%;
+    margin: 0 0 15px 0;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 2px solid rgb(232, 188, 46);
+    background-color: white;
+    color: #111827;
+}
+
+#formContainer button {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    background-color: rgb(89, 92, 96);
+    color: white;
+    font-weight: bold;
+    padding: 10px 14px;
+    margin-top: 8px;
+    cursor: pointer;
+    text-align: center;
+}
+
+#formContainer button:hover {
+    background-color: rgb(232, 188, 46);
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+  margin-bottom: 0 !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  color: #333 !important;
+  cursor: pointer;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
