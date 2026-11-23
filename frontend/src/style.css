@@ -7,7 +7,8 @@
 }
 
 body {
-    padding: 50px;
+    padding: 0;
+    margin: 0;
 }
 
 .image {
@@ -138,4 +139,230 @@ header > small {
 
 .status-message.success {
     color: #4ade80;
+}
+
+/* ===== DASHBOARD PAGE ===== */
+/* Siguraduhing sagad sa buong screen ang root at body */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.app-wrapper {
+  min-height: 100vh;
+  padding: 50px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Full-screen layout para sa Dashboard */
+.dash-wrapper {
+  width: 100%;
+  min-height: 100%;
+  background: #f5f5f5;
+  color: #111;
+}
+
+.dash-header {
+  background: #111;
+  color: #fff;
+  border-bottom: 3px solid #d4af37;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dash-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #d4af37;
+}
+
+.dash-search {
+  padding: 8px 12px;
+  width: 280px;
+  border: 1px solid #d4af37;
+  border-radius: 4px;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dash-actions button {
+  padding: 8px 12px;
+  border: 1px solid #d4af37;
+  background: transparent;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.notif-box {
+  position: relative;
+}
+
+.notif-menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 280px;
+  background: #fff;
+  color: #111;
+  border: 1px solid #d4af37;
+  padding: 10px;
+  z-index: 10;
+}
+
+.notif-menu p {
+  font-size: 12px;
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  margin: 0;
+}
+
+.notif-menu button {
+  margin-top: 8px;
+  background: #d4af37;
+  color: #111;
+  border: none;
+  width: 100%;
+}
+
+.dash-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 30px 40px;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: #fff;
+  border-left: 4px solid #d4af37;
+  padding: 14px;
+  border-radius: 4px;
+}
+
+.summary-card span {
+  font-size: 12px;
+  color: #666;
+}
+
+.summary-card h3 {
+  margin: 5px 0 0;
+  font-size: 24px;
+}
+
+.dash-box {
+  background: #fff;
+  padding: 18px;
+  border-radius: 4px;
+  margin-bottom: 18px;
+  border: 1px solid #ddd;
+}
+
+.dash-box h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.inline-form input,
+.inline-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 130px;
+}
+
+.btn-gold {
+  background: #d4af37;
+  color: #111;
+  border: none;
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-accept {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.btn-reject {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bmi-live {
+  background: #fffbeb;
+  border: 1px solid #d4af37;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.simple-table th,
+.simple-table td {
+  border-bottom: 1px solid #eee;
+  padding: 9px;
+  text-align: left;
+}
+
+.simple-table th {
+  background: #fafafa;
+}
+
+@media (max-width: 768px) {
+  .summary-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

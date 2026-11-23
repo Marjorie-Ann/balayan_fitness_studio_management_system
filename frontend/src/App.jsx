@@ -1,32 +1,35 @@
-import { useState } from "react";
-import SignInPage from "./pages/SignInPage";
-import ChangePassword from "./pages/ChangePassword";
-import "./style.css";
+import React, { useState } from 'react';
+import SignInPage from './pages/SignInPage';
+import ChangePassword from './pages/ChangePassword';
+import DashboardPage from './pages/DashboardPage';
+import './style.css';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState("signIn");
-  const [signInBanner, setSignInBanner] = useState("");
+export default function App() {
+  const [page, setPage] = useState('signin');
+  const [trainerName, setTrainerName] = useState('Trainer');
+
+  if (page === 'dashboard') {
+    return (
+      <DashboardPage
+        trainerName={trainerName}
+        onLogout={() => setPage('signin')}
+      />
+    );
+  }
 
   return (
-    <main>
-      {currentPage === "signIn" ? (
+    <div className="app-wrapper">
+      {page === 'signin' ? (
         <SignInPage
-          initialMessage={signInBanner}
-          onGoToChangePassword={() => {
-            setSignInBanner("");
-            setCurrentPage("changePassword");
+          onGoToChangePassword={() => setPage('changepass')}
+          onLoginSuccess={(name) => {
+            setTrainerName(name);
+            setPage('dashboard');
           }}
         />
       ) : (
-        <ChangePassword
-          onBackToSignIn={(msg = "") => {
-            setSignInBanner(msg);
-            setCurrentPage("signIn");
-          }}
-        />
+        <ChangePassword onBackToSignIn={() => setPage('signin')} />
       )}
-    </main>
+    </div>
   );
 }
-
-export default App;
