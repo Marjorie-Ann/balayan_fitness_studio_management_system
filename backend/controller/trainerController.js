@@ -1,6 +1,6 @@
 import * as trainerService from '../services/trainerService.js';
 
-// Implement trainer login
+// 3.7.1 trainer login/Signin backend
 export const login = async (req, res) => {
     const { username, password } = req.body;
     const user = { username, password };
