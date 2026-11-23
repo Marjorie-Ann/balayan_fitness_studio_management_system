@@ -302,3 +302,25 @@ export const recordCashPayment = async (paymentData) => {
     return await adminModel.findPaymentById(paymentId);
 };
 
+// 1.4.2 View Payment Records (with search and filters)
+export const getAllPayments = async (filters) => {
+    if (filters?.status && !["Paid", "Pending"].includes(filters.status)) {
+        throw new ValidationError("Invalid payment status filter. Use 'Paid' or 'Pending'.", 400);
+    }
+    return await adminModel.getAllPayments(filters);
+};
+
+// Confirm cash received for an existing Pending payment
+export const confirmCashPayment = async (paymentId) => {
+    const existing = await adminModel.findPaymentById(paymentId);
+    if (!existing) {
+        throw new ValidationError("Payment record not found.", 404);
+    }
+    if (existing.payment_status === "Paid") {
+        throw new ValidationError("Payment is already marked as Paid.", 400);
+    }
+
+    await adminModel.confirmCashPaymentById(paymentId);
+    return await adminModel.findPaymentById(paymentId);
+};
+
