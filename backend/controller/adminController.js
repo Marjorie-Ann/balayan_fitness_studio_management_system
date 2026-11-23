@@ -19,3 +19,27 @@ export const getDashboardSummary = async (req, res) => {
     }
 };
 
+// 1.2.1 Create Client Account
+export const createClientAccount = async (req, res) => {
+    try {
+        const newClient = await adminService.createClientAccount(req.body);
+        res.status(201).json({
+            success: true,
+            message: "Client account created successfully.",
+            data: newClient
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to create client account.",
+            error: error.message
+        });
+    }
+};
+
