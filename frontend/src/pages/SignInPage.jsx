@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import FormContainer from "../components/FormContainer";
 import HeaderContainer from "../components/HeaderContainer";
 
-const SignInPage = ({ onGoToChangePassword, initialMessage = "" }) => {
+const SignInPage = ({ onGoToChangePassword, onLoginSuccess, initialMessage = "" }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,15 +17,44 @@ const SignInPage = ({ onGoToChangePassword, initialMessage = "" }) => {
     }
   }, [initialMessage]);
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    setStatus({
-      type: "error",
-      text: "Sign In is not yet functional.",
-    });
-    setUsername("");
-    setPassword("");
-    setShowPassword(false);
+    setStatus({ type: "", text: "" });
+
+    try {
+      const response = await fetch("http://localhost:3000/trainer/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setStatus({
+          type: "error",
+          text: data.message || "Sign In failed.",
+        });
+        setUsername("");
+        setPassword("");
+        setShowPassword(false);
+        return;
+      }
+
+      const loggedName = data.trainer?.full_name || data.trainer?.username || username;
+      setUsername("");
+      setPassword("");
+      setShowPassword(false);
+
+      if (onLoginSuccess) {
+        onLoginSuccess(loggedName);
+      }
+    } catch (error) {
+      setStatus({
+        type: "error",
+        text: "Cannot connect to server.",
+      });
+    }
   };
 
   return (
