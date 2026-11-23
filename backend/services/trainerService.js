@@ -1,6 +1,5 @@
 import * as trainerModel from '../models/trainerModel.js';
 import ValidationError from '../utils/ValidationError.js';
-import bcrypt from 'bcryptjs';
 
 // Trainer login and logout (hindi pa functional ang login - stub/placeholder pa lang)
 export const login = async (user) => {
@@ -15,7 +14,7 @@ export const logout = async () => {
     return "Logout successful";
 };
 
-// Trainer change password (walang currentPassword at walang length/strength limit)
+// Trainer change password (plain text ang naka-save sa database)
 export const changePassword = async (data) => {
     if (!data.username || !data.newPassword || !data.confirmPassword) {
         throw new ValidationError("All fields are required", 400);
@@ -37,9 +36,6 @@ export const changePassword = async (data) => {
         throw new ValidationError("Account is inactive. Please contact admin.", 403);
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(data.newPassword, salt);
-
-    await trainerModel.updatePassword(trainer.user_id, hashedPassword);
+    await trainerModel.updatePassword(trainer.user_id, data.newPassword);
     return "Password updated successfully";
 };

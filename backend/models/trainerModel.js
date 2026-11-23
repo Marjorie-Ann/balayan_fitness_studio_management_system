@@ -1,15 +1,15 @@
 import pool from '../config/db.js';
 
-// 3.7.1 Trainer login
+// 3.7.1 Trainer login & change password lookup
 export const findTrainerByUsername = async (username) => {
     const [rows] = await pool.query(
-        "SELECT u.user_id, u.username, u.password, u.role, u.account_status, t.trainer_id, t.full_name, t.specialization FROM users u LEFT JOIN trainers t ON u.user_id = t.user_id WHERE u.username = ? AND u.role = 'Trainer'",
+        "SELECT u.user_id, u.username, u.password, u.role, u.account_status, t.trainer_id, t.full_name FROM users u LEFT JOIN trainers t ON u.user_id = t.user_id WHERE u.username = ? AND u.role = 'Trainer'",
         [username]
     );
     return rows;
 };
 
-// Trainer change password (naka-ready para sa susunod)
+// Trainer change password
 export const updatePassword = async (userId, hashedPassword) => {
     const [result] = await pool.query(
         "UPDATE users SET password = ? WHERE user_id = ?",
