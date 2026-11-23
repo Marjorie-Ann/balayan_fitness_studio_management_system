@@ -132,3 +132,77 @@ export const createTrainerAccount = async (data) => {
     };
 };
 
+// ==========================================
+// 1.3 MEMBERSHIP MANAGEMENT SERVICES
+// ==========================================
+
+
+
+// 1.3.1 Create Membership Record
+export const createMembership = async (membershipData) => {
+    const { client_id, membership_type, start_date, expiration_date } = membershipData;
+
+    if (!client_id || !membership_type || !start_date || !expiration_date) {
+        throw new ValidationError("All fields (client_id, membership_type, start_date, expiration_date) are required.", 400);
+    }
+
+    const client = await adminModel.findClientById(client_id);
+    if (!client) {
+        throw new ValidationError("Client not found.", 404);
+    }
+
+    const status = computeMembershipStatus(start_date, expiration_date);
+
+    const membershipId = await adminModel.createMembership({
+        client_id,
+        membership_type,
+        start_date,
+        expiration_date,
+        status
+    });
+
+    return await adminModel.findMembershipById(membershipId);
+};
+
+
+
+// 1.3.1 & 1.3.2 Update Membership Record
+export const updateMembership = async (membershipId, updateData) => {
+    const existing = await adminModel.findMembershipById(membershipId);
+    if (!existing) {
+        throw new ValidationError("Membership record not found.", 404);
+    }
+
+    const membership_type = updateData.membership_type || existing.membership_type;
+    const start_date = updateData.start_date || existing.start_date;
+    const expiration_date = updateData.expiration_date || existing.expiration_date;
+
+    // Auto-compute status based on dates unless manually overridden with valid value
+    let status = computeMembershipStatus(start_date, expiration_date);
+    if (updateData.status && ["Active", "Expired"].includes(updateData.status)) {
+        status = updateData.status;
+    }
+
+    await adminModel.updateMembershipById(membershipId, {
+        membership_type,
+        start_date,
+        expiration_date,
+        status
+    });
+
+    return await adminModel.findMembershipById(membershipId);
+};
+
+export const getAllUsers = async () => {
+    return await adminModel.getAllUsers();
+};
+
+export const deleteUserAccount = async (userId) => {
+    const existingUser = await adminModel.findUserById(userId);
+    if (!existingUser) {
+        throw new ValidationError("User account not found.", 404);
+    }
+    await adminModel.deleteUserById(userId);
+    return { user_id: existingUser.user_id, username: existingUser.username, role: existingUser.role };
+};
+

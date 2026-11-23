@@ -84,3 +84,31 @@ export const getAllClients = async (req, res) => {
         });
     }
 };
+// ==========================================
+// 1.3 MEMBERSHIP MANAGEMENT CONTROLLERS
+// ==========================================
+
+// 1.3.1 Create Membership
+export const createMembership = async (req, res) => {
+    try {
+        const membership = await adminService.createMembership(req.body);
+        res.status(201).json({
+            success: true,
+            message: "Membership record created successfully.",
+            data: membership
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to create membership record.",
+            error: error.message
+        });
+    }
+};
+
