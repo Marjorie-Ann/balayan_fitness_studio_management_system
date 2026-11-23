@@ -385,3 +385,7 @@ export const scanQrAttendance = async (qrCodeInput) => {
     };
 };
 
+// 1.5.2 View and Search Attendance Records
+export const getAllAttendance = async (filters) => {
+    return await adminModel.getAllAttendance(filters);
+};
