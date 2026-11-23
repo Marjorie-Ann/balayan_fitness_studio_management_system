@@ -356,3 +356,113 @@ export const confirmCashPaymentById = async (paymentId) => {
     return result.affectedRows;
 };
 
+// ==========================================
+// 1.5 QR CODE ATTENDANCE MANAGEMENT
+// ==========================================
+
+// 1.5.1 Find client by QR code (with user account_status)
+export const findClientByQrCode = async (qrCode) => {
+    const [rows] = await db.query(
+        `SELECT 
+            c.client_id,
+            c.user_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            c.qr_code,
+            u.account_status
+         FROM clients c
+         INNER JOIN users u ON c.user_id = u.user_id
+         WHERE c.qr_code = ?`,
+        [qrCode]
+    );
+    return rows[0];
+};
+
+// Check if client currently has a valid Active membership today
+export const findActiveMembershipByClientId = async (clientId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            membership_id,
+            client_id,
+            membership_type,
+            DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+            DATE_FORMAT(expiration_date, '%Y-%m-%d') AS expiration_date,
+            status
+         FROM memberships
+         WHERE client_id = ?
+           AND status = 'Active'
+           AND start_date <= CURDATE()
+           AND expiration_date >= CURDATE()
+         ORDER BY expiration_date DESC
+         LIMIT 1`,
+        [clientId]
+    );
+    return rows[0];
+};
+
+// Get client's latest membership (for clear error message if expired)
+export const findLatestMembershipByClientId = async (clientId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            membership_id,
+            membership_type,
+            DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+            DATE_FORMAT(expiration_date, '%Y-%m-%d') AS expiration_date,
+            status
+         FROM memberships
+         WHERE client_id = ?
+         ORDER BY membership_id DESC
+         LIMIT 1`,
+        [clientId]
+    );
+    return rows[0];
+};
+
+// Check if client already checked in today (prevent duplicate scans)
+export const findTodayAttendanceByClientId = async (clientId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            attendance_id,
+            client_id,
+            DATE_FORMAT(attendance_date, '%Y-%m-%d') AS attendance_date,
+            TIME_FORMAT(time_in, '%H:%i:%s') AS time_in
+         FROM attendance
+         WHERE client_id = ? AND attendance_date = CURDATE()
+         LIMIT 1`,
+        [clientId]
+    );
+    return rows[0];
+};
+
+// 1.5.1 Insert Attendance Record (client_id, current date, current time)
+export const createAttendanceRecord = async (clientId) => {
+    const [result] = await db.query(
+        `INSERT INTO attendance (client_id, attendance_date, time_in)
+         VALUES (?, CURDATE(), CURTIME())`,
+        [clientId]
+    );
+    return result.insertId;
+};
+
+// Find single attendance record by ID (with client info)
+export const findAttendanceById = async (attendanceId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            a.attendance_id,
+            a.client_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            c.qr_code,
+            DATE_FORMAT(a.attendance_date, '%Y-%m-%d') AS attendance_date,
+            TIME_FORMAT(a.time_in, '%H:%i:%s') AS time_in,
+            DATE_FORMAT(a.time_in, '%h:%i %p') AS formatted_time
+         FROM attendance a
+         INNER JOIN clients c ON a.client_id = c.client_id
+         WHERE a.attendance_id = ?`,
+        [attendanceId]
+    );
+    return rows[0];
+};
+

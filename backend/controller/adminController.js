@@ -256,3 +256,32 @@ export const confirmCashPayment = async (req, res) => {
     }
 };
 
+// ==========================================
+// 1.5 QR CODE ATTENDANCE MANAGEMENT CONTROLLERS
+// ==========================================
+
+// 1.5.1 Scan and Check QR Code to Record Attendance
+export const scanQrAttendance = async (req, res) => {
+    try {
+        const { qr_code } = req.body;
+        const attendance = await adminService.scanQrAttendance(qr_code);
+        res.status(201).json({
+            success: true,
+            message: `Attendance recorded successfully for ${attendance.full_name}.`,
+            data: attendance
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to record QR attendance.",
+            error: error.message
+        });
+    }
+};
+

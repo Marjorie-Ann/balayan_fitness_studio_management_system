@@ -324,3 +324,64 @@ export const confirmCashPayment = async (paymentId) => {
     return await adminModel.findPaymentById(paymentId);
 };
 
+// ==========================================
+// 1.5 QR CODE ATTENDANCE MANAGEMENT SERVICES
+// ==========================================
+
+// 1.5.1 Scan and Check QR Code to Record Attendance
+export const scanQrAttendance = async (qrCodeInput) => {
+    const qrCode = typeof qrCodeInput === "string" ? qrCodeInput.trim() : "";
+
+    if (!qrCode) {
+        throw new ValidationError("QR code is required.", 400);
+    }
+
+    // 1. Find client account using QR code
+    const client = await adminModel.findClientByQrCode(qrCode);
+    if (!client) {
+        throw new ValidationError("Invalid QR code. No client account found.", 404);
+    }
+
+    if (client.account_status !== "Active") {
+        throw new ValidationError(`Access denied. ${client.full_name}'s account is inactive.`, 403);
+    }
+
+    // 2. Sync membership statuses first so expired dates are up to date
+    await adminModel.syncMembershipStatuses();
+
+    // 3. Check if client has an active membership
+    const activeMembership = await adminModel.findActiveMembershipByClientId(client.client_id);
+    if (!activeMembership) {
+        const latest = await adminModel.findLatestMembershipByClientId(client.client_id);
+        if (latest) {
+            throw new ValidationError(
+                `Access denied. ${client.full_name}'s ${latest.membership_type} membership expired on ${latest.expiration_date}.`,
+                403
+            );
+        }
+        throw new ValidationError(
+            `Access denied. ${client.full_name} has no active membership record.`,
+            403
+        );
+    }
+
+    // 4. Prevent duplicate check-in on the same day
+    const existingToday = await adminModel.findTodayAttendanceByClientId(client.client_id);
+    if (existingToday) {
+        throw new ValidationError(
+            `${client.full_name} has already checked in today at ${existingToday.time_in}.`,
+            409
+        );
+    }
+
+    // 5. Record attendance (client_id, CURDATE(), CURTIME())
+    const attendanceId = await adminModel.createAttendanceRecord(client.client_id);
+    const attendanceRecord = await adminModel.findAttendanceById(attendanceId);
+
+    return {
+        ...attendanceRecord,
+        membership_type: activeMembership.membership_type,
+        expiration_date: activeMembership.expiration_date
+    };
+};
+
