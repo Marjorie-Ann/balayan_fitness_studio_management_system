@@ -25,5 +25,11 @@ router.get("/dashboard-summary", getDashboardSummary);
 router.post("/clients", createClientAccount);
 router.get("/clients", getAllClients);
 
+// 1.2.2 Create Trainer Account
+router.post("/trainers", createTrainerAccount);
+
+// User Management
+router.get("/users", getAllUsers);
+router.delete("/users/:id", deleteUserAccount);
 
 export default router;

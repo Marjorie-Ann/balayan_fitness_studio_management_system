@@ -102,3 +102,51 @@ export const insertClientAccount = async (clientData) => {
     }
 };
 
+// insert - 1.2.2 Create Trainer Account (users + trainers table)
+export const insertTrainerAccount = async (trainerData) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Insert sa `users` table
+        const [userResult] = await connection.query(
+            "INSERT INTO users (username, password, role, account_status) VALUES (?, ?, 'Trainer', 'Active')",
+            [trainerData.username, trainerData.hashedPassword]
+        );
+        const userId = userResult.insertId;
+
+        // 2. Insert sa `trainers` table
+        const [trainerResult] = await connection.query(
+            "INSERT INTO trainers (user_id, full_name, email, contact_number) VALUES (?, ?, ?, ?)",
+            [userId, trainerData.full_name, trainerData.email, trainerData.contact_number]
+        );
+        const trainerId = trainerResult.insertId;
+
+        await connection.commit();
+        return { user_id: userId, trainer_id: trainerId };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
+// Get all clients (for Frontend dropdowns in Membership & Cash Payment forms)
+export const getAllClients = async () => {
+    const [rows] = await db.query(`
+        SELECT 
+            c.client_id,
+            c.user_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            c.qr_code,
+            u.account_status
+        FROM clients c
+        INNER JOIN users u ON c.user_id = u.user_id
+        ORDER BY c.full_name ASC
+    `);
+    return rows;
+};
+

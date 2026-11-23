@@ -43,3 +43,44 @@ export const createClientAccount = async (req, res) => {
     }
 };
 
+// 1.2.2 Create Trainer Account
+export const createTrainerAccount = async (req, res) => {
+    try {
+        const newTrainer = await adminService.createTrainerAccount(req.body);
+        res.status(201).json({
+            success: true,
+            message: "Trainer account created successfully.",
+            data: newTrainer
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to create trainer account.",
+            error: error.message
+        });
+    }
+};
+
+// Get all clients (for Frontend dropdowns)
+export const getAllClients = async (req, res) => {
+    try {
+        const clients = await adminService.getAllClients();
+        res.status(200).json({
+            success: true,
+            message: "Clients retrieved successfully.",
+            data: clients
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve clients.",
+            error: error.message
+        });
+    }
+};

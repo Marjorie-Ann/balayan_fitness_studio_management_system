@@ -85,3 +85,50 @@ export const createClientAccount = async (data) => {
     };
 };
 
+// 1.2.2 Create Trainer Account
+export const createTrainerAccount = async (data) => {
+    const { full_name, email, contact_number, username, password } = data;
+
+    // 1. Check required fields
+    if (!full_name || !email || !contact_number || !username || !password) {
+        throw new ValidationError("All fields (full_name, email, contact_number, username, password) are required.");
+    }
+
+    // 2. Check contact_number length (varchar(11) sa database)
+    if (contact_number.length > 11) {
+        throw new ValidationError("Contact number must not exceed 11 digits.");
+    }
+
+    // 3. Check kung existing na ang username o email
+    const existingUser = await adminModel.findUserByUsername(username);
+    if (existingUser) {
+        throw new ValidationError("Username is already taken.", 409);
+    }
+
+    const existingEmail = await adminModel.findTrainerByEmail(email);
+    if (existingEmail) {
+        throw new ValidationError("Email is already registered to another trainer.", 409);
+    }
+
+    // 4. Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 5. Save sa database
+    const created = await adminModel.insertTrainerAccount({
+        full_name,
+        email,
+        contact_number,
+        username,
+        hashedPassword
+    });
+
+    return {
+        trainer_id: created.trainer_id,
+        user_id: created.user_id,
+        full_name,
+        email,
+        contact_number,
+        username
+    };
+};
+
