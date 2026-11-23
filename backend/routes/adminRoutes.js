@@ -44,5 +44,6 @@ router.patch("/payments/:id/confirm", confirmCashPayment);
 
 // 1.5.1 & 1.5.2 QR Code Attendance Management
 router.post("/attendance/scan", scanQrAttendance);
+router.get("/attendance", getAllAttendance);
 
 export default router;

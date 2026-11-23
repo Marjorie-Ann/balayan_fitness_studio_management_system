@@ -466,3 +466,40 @@ export const findAttendanceById = async (attendanceId) => {
     return rows[0];
 };
 
+// 1.5.2 View and Search Attendance Records (search by client, filter by date)
+export const getAllAttendance = async ({ search, date } = {}) => {
+    let query = `
+        SELECT 
+            a.attendance_id,
+            a.client_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            c.qr_code,
+            DATE_FORMAT(a.attendance_date, '%Y-%m-%d') AS attendance_date,
+            TIME_FORMAT(a.time_in, '%H:%i:%s') AS time_in,
+            DATE_FORMAT(a.time_in, '%h:%i %p') AS formatted_time
+        FROM attendance a
+        INNER JOIN clients c ON a.client_id = c.client_id
+        WHERE 1=1
+    `;
+    const params = [];
+
+    // Search by client name or QR code
+    if (search && search.trim() !== "") {
+        query += ` AND (c.full_name LIKE ? OR c.qr_code LIKE ?)`;
+        const wildcard = `%${search.trim()}%`;
+        params.push(wildcard, wildcard);
+    }
+
+    // Filter by attendance_date (YYYY-MM-DD)
+    if (date && date.trim() !== "") {
+        query += ` AND a.attendance_date = ?`;
+        params.push(date.trim());
+    }
+
+    query += ` ORDER BY a.attendance_date DESC, a.time_in DESC, a.attendance_id DESC`;
+
+    const [rows] = await db.query(query, params);
+    return rows;
+};

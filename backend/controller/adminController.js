@@ -285,3 +285,21 @@ export const scanQrAttendance = async (req, res) => {
     }
 };
 
+// 1.5.2 View and Search Attendance Records
+export const getAllAttendance = async (req, res) => {
+    try {
+        const { search, date } = req.query;
+        const records = await adminService.getAllAttendance({ search, date });
+        res.status(200).json({
+            success: true,
+            message: "Attendance records retrieved successfully.",
+            data: records
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve attendance records.",
+            error: error.message
+        });
+    }
+};
