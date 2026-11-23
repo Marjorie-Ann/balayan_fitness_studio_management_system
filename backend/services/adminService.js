@@ -228,3 +228,77 @@ export const deleteUserAccount = async (userId) => {
     return { user_id: existingUser.user_id, username: existingUser.username, role: existingUser.role };
 };
 
+// ==========================================
+// 1.4 CASH PAYMENT MANAGEMENT SERVICES
+// ==========================================
+
+// Helper: Generate unique transaction ID (e.g., TXN-20261120-4821)
+const generateTransactionId = () => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
+    return `TXN-${yyyy}${mm}${dd}-${randomPart}`;
+};
+
+// 1.4.1 Record Cash Payment
+export const recordCashPayment = async (paymentData) => {
+    const {
+        client_id,
+        membership_id,
+        amount,
+        payment_date,
+        payment_method,
+        cash_received
+    } = paymentData;
+
+    if (!client_id || amount === undefined || amount === null || amount === "") {
+        throw new ValidationError("Client ID and payment amount are required.", 400);
+    }
+
+    const numericAmount = Number(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+        throw new ValidationError("Payment amount must be greater than 0.", 400);
+    }
+
+    // Enforce Cash payment method only
+    if (payment_method && payment_method.toLowerCase() !== "cash") {
+        throw new ValidationError("Only Cash payments are accepted for this transaction.", 400);
+    }
+
+    // Verify client exists
+    const client = await adminModel.findClientById(client_id);
+    if (!client) {
+        throw new ValidationError("Selected client does not exist.", 404);
+    }
+
+    // Verify membership exists if membership_id is provided
+    if (membership_id) {
+        const membership = await adminModel.findMembershipById(membership_id);
+        if (!membership) {
+            throw new ValidationError("Selected membership record does not exist.", 404);
+        }
+        if (Number(membership.client_id) !== Number(client_id)) {
+            throw new ValidationError("Membership record does not belong to the selected client.", 400);
+        }
+    }
+
+    // Mark as 'Paid' only after Admin confirms cash has been received
+    const isConfirmed = cash_received === true || cash_received === "true" || cash_received === 1;
+    const payment_status = isConfirmed ? "Paid" : "Pending";
+
+    const transaction_id = generateTransactionId();
+
+    const paymentId = await adminModel.createPayment({
+        transaction_id,
+        client_id,
+        membership_id: membership_id || null,
+        amount: numericAmount.toFixed(2),
+        payment_status,
+        payment_date: payment_date || null
+    });
+
+    return await adminModel.findPaymentById(paymentId);
+};
+
