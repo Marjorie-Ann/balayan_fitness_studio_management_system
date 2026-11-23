@@ -37,5 +37,7 @@ router.post("/memberships", createMembership);
 router.get("/memberships", getAllMemberships);
 router.put("/memberships/:id", updateMembership);
 
+// 1.4.1 & 1.4.2 Cash Payment Management
+router.post("/payments", recordCashPayment);
 
 export default router;

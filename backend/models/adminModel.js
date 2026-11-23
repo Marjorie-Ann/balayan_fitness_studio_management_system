@@ -260,3 +260,41 @@ export const deleteUserById = async (userId) => {
     return result.affectedRows;
 };
 
+// ==========================================
+// 1.4 CASH PAYMENT MANAGEMENT
+// ==========================================
+
+// 1.4.1 Record Cash Payment
+export const createPayment = async ({ transaction_id, client_id, membership_id, amount, payment_status, payment_date }) => {
+    const [result] = await db.query(
+        `INSERT INTO payments (transaction_id, client_id, membership_id, amount, payment_status, payment_date)
+         VALUES (?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`,
+        [transaction_id, client_id, membership_id || null, amount, payment_status, payment_date || null]
+    );
+    return result.insertId;
+};
+
+// Find single payment by ID (with client & membership details)
+export const findPaymentById = async (paymentId) => {
+    const [rows] = await db.query(
+        `SELECT 
+            p.payment_id,
+            p.transaction_id,
+            p.client_id,
+            c.full_name,
+            c.email,
+            c.contact_number,
+            p.membership_id,
+            m.membership_type,
+            p.amount,
+            'Cash' AS payment_method,
+            p.payment_status,
+            DATE_FORMAT(p.payment_date, '%Y-%m-%d %H:%i:%s') AS payment_date
+         FROM payments p
+         INNER JOIN clients c ON p.client_id = c.client_id
+         LEFT JOIN memberships m ON p.membership_id = m.membership_id
+         WHERE p.payment_id = ?`,
+        [paymentId]
+    );
+    return rows[0];
+};

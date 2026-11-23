@@ -175,3 +175,35 @@ export const deleteUserAccount = async (req, res) => {
     }
 };
 
+// ==========================================
+// 1.4 CASH PAYMENT MANAGEMENT CONTROLLERS
+// ==========================================
+
+// 1.4.1 Record Cash Payment
+export const recordCashPayment = async (req, res) => {
+    try {
+        const payment = await adminService.recordCashPayment(req.body);
+        const statusMsg = payment.payment_status === "Paid"
+            ? "Cash payment confirmed and recorded as Paid."
+            : "Payment saved as Pending (awaiting Admin cash receipt confirmation).";
+
+        res.status(201).json({
+            success: true,
+            message: statusMsg,
+            data: payment
+        });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to record cash payment.",
+            error: error.message
+        });
+    }
+};
+
