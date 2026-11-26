@@ -7,5 +7,7 @@ router.post('/login', trainerController.login);
 router.post('/change-password', trainerController.changePassword);
 router.get('/notifications/:userId', trainerController.getNotifications);
 router.put('/notifications/:userId/read', trainerController.markAllRead);
+router.get('/appointments/:userId', trainerController.getAppointments);
+router.put('/appointments/:appointmentId', trainerController.updateAppointment);
 
 export default router;
