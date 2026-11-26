@@ -77,6 +77,18 @@ export const fetchAppointments = async (userId) => {
 };
 
 export const changeAppointmentStatus = async (appointmentId, status, rejectionReason) => {
-    await trainerModel.updateAppointmentStatus(appointmentId, status, rejectionReason);
+    if (!['Accepted', 'Rejected'].includes(status)) {
+        throw new ValidationError("Invalid appointment status.", 400);
+    }
+
+    if (status === 'Rejected' && (!rejectionReason || !rejectionReason.trim())) {
+        throw new ValidationError("Rejection reason is required.", 400);
+    }
+
+    await trainerModel.updateAppointmentStatus(
+        appointmentId,
+        status,
+        status === 'Rejected' ? rejectionReason.trim() : null
+    );
     return "Appointment updated";
 };
