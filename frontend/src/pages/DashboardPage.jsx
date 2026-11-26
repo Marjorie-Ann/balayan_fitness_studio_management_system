@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-// Helper para gawing 12-hour format (6:00 AM - 10:00 PM) ang 24-hour time
+// 12-hour format (6:00 AM - 10:00 PM)
 const formatTime = (timeStr) => {
   if (!timeStr) return "";
   const [hourStr, minuteStr] = timeStr.split(":");
@@ -42,7 +42,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
   const [notifications, setNotifications] = useState([]);
   const [appointments, setAppointments] = useState([]);
 
-  // States para sa Appointment Review & Rejection Modal
+  // States para sa Appointment Review & Rejection 
   const [selectedApp, setSelectedApp] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
@@ -55,7 +55,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
   const [availEnd, setAvailEnd] = useState("09:00");
   const [availError, setAvailError] = useState("");
 
-  // States para sa Fitness Progress (Trainer-only input)
+  // States para sa Fitness Progress 
   const [myClients, setMyClients] = useState([]);
   const [progressRecords, setProgressRecords] = useState([]);
   const [progClientId, setProgClientId] = useState("");
@@ -122,6 +122,22 @@ const DashboardPage = ({ trainer, onLogout }) => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Summary Counts para sa itaas ng dashboard
+  const validAppointments = appointments.filter(
+    (app) => app.start_time >= "06:00:00" && app.end_time <= "22:00:00"
+  );
+  const pendingCount = validAppointments.filter(
+    (app) => app.appointment_status === "Pending"
+  ).length;
+  const acceptedCount = validAppointments.filter(
+    (app) => app.appointment_status === "Accepted"
+  ).length;
+  const availableSlotsCount = availability.filter(
+    (slot) => slot.slot_status === "Available"
+  ).length;
+  const activeClientsCount = myClients.length;
+  const totalProgressCount = progressRecords.length;
+
   const filteredNotifications = notifications.filter((n) => {
     const keyword = searchQuery.toLowerCase();
     return (
@@ -130,16 +146,12 @@ const DashboardPage = ({ trainer, onLogout }) => {
     );
   });
 
-  const filteredAppointments = appointments.filter((app) => {
+  const filteredAppointments = validAppointments.filter((app) => {
     const keyword = searchQuery.toLowerCase();
-    const withinGymHours =
-      app.start_time >= "06:00:00" && app.end_time <= "22:00:00";
-
     return (
-      withinGymHours &&
-      (app.full_name.toLowerCase().includes(keyword) ||
-        app.appointment_date.toLowerCase().includes(keyword) ||
-        app.appointment_status.toLowerCase().includes(keyword))
+      app.full_name.toLowerCase().includes(keyword) ||
+      app.appointment_date.toLowerCase().includes(keyword) ||
+      app.appointment_status.toLowerCase().includes(keyword)
     );
   });
 
@@ -316,13 +328,10 @@ const DashboardPage = ({ trainer, onLogout }) => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-
+        
         <div className="dash-actions">
           <div className="notif-box">
-            <button onClick={() => setShowNotif(!showNotif)}>
-              Notifications ({unreadCount})
-            </button>
-
+            <button onClick={() => setShowNotif(!showNotif)}> Notifications ({unreadCount})</button>
             {showNotif && (
               <div className="notif-menu">
                 {filteredNotifications.length === 0 ? (
@@ -347,7 +356,35 @@ const DashboardPage = ({ trainer, onLogout }) => {
       </header>
 
       <main className="dash-content">
-        {/* BOX 1: Appointment Requests */}
+        {/* TOP SUMMARY CARDS */}
+        <div className="summary-grid">
+          <div className="summary-card">
+            <span className="summary-label">Active Clients</span>
+            <strong className="summary-value">{activeClientsCount} / 35</strong>
+          </div>
+
+          <div className="summary-card">
+            <span className="summary-label">Pending Requests</span>
+            <strong className="summary-value">{pendingCount}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span className="summary-label">Accepted Sessions</span>
+            <strong className="summary-value">{acceptedCount}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span className="summary-label">Available Slots</span>
+            <strong className="summary-value">{availableSlotsCount}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span className="summary-label">Progress Records</span>
+            <strong className="summary-value">{totalProgressCount}</strong>
+          </div>
+        </div>
+
+        {/* Appointment Requests */}
         <div className="dash-box">
           <h3>Appointment Requests</h3>
 
@@ -378,7 +415,9 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         {formatTime(app.start_time)} - {formatTime(app.end_time)}
                       </td>
                       <td>
-                        <strong>{app.appointment_status}</strong>
+                        <strong className={`status-${app.appointment_status.toLowerCase()}`}>
+                          {app.appointment_status}
+                        </strong>
                         {app.rejection_reason && (
                           <p className="rejection-text">
                             Reason: {app.rejection_reason}
@@ -386,12 +425,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         )}
                       </td>
                       <td>
-                        <button
-                          className="btn-review"
-                          onClick={() => openReviewModal(app)}
-                        >
-                          Review
-                        </button>
+                        <button className="btn-review" onClick={() => openReviewModal(app)}>Review</button>
                       </td>
                     </tr>
                   ))
@@ -401,7 +435,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
           </div>
         </div>
 
-        {/* BOX 2: Trainer Availability (All Trainers) */}
+        {/* Trainer Availability */}
         <div className="dash-box dash-box-spaced">
           <h3>Trainer Availability</h3>
 
@@ -446,9 +480,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
               onChange={(e) => setAvailEnd(e.target.value)}
               required
             />
-            <button type="submit" className="btn-review">
-              + Add Slot
-            </button>
+            <button type="submit" className="btn-review">Add Slot</button>
           </form>
 
           {availError && <p className="form-error-msg">{availError}</p>}
@@ -494,10 +526,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         {slot.slot_status === "Available" ? (
                           <button
                             className="btn-reject"
-                            onClick={() => handleDeleteAvailability(slot.availability_id)}
-                          >
-                            Delete
-                          </button>
+                            onClick={() => handleDeleteAvailability(slot.availability_id)}>Delete</button>
                         ) : (
                           <span>Booked</span>
                         )}
@@ -510,7 +539,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
           </div>
         </div>
 
-        {/* BOX 3: Client Fitness Progress (Live BMI Calculator + Remarks) */}
+        {/* Client Fitness Progress */}
         <div className="dash-box dash-box-spaced">
           <h3>Client Fitness Progress</h3>
 
@@ -559,12 +588,10 @@ const DashboardPage = ({ trainer, onLogout }) => {
               type="submit"
               className="btn-review"
               disabled={myClients.length === 0}
-            >
-              + Record Progress
-            </button>
+            > Add Record Progress</button>
           </form>
 
-          {/* Live BMI Calculator Preview with Remarks */}
+          {/* BMI Calculator Preview with Remarks */}
           <div className="bmi-preview-bar">
             <span>
               <strong>BMI Calculator:</strong>{" "}
@@ -639,10 +666,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         <td>
                           <button
                             className="btn-reject"
-                            onClick={() => handleDeleteProgress(rec.progress_id)}
-                          >
-                            Delete
-                          </button>
+                            onClick={() => handleDeleteProgress(rec.progress_id)}>Delete</button>
                         </td>
                       </tr>
                     );
@@ -681,7 +705,9 @@ const DashboardPage = ({ trainer, onLogout }) => {
               </p>
               <p>
                 <strong>Current Status:</strong>{" "}
-                {selectedApp.appointment_status}
+                <strong className={`status-${selectedApp.appointment_status.toLowerCase()}`}>
+                  {selectedApp.appointment_status}
+                </strong>
               </p>
               {selectedApp.rejection_reason && (
                 <p className="rejection-modal-text">
@@ -694,7 +720,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
             {selectedApp.appointment_status === "Pending" ? (
               <div className="reject-section">
                 <label htmlFor="rejectReason">
-                  <strong>Reason for Rejection (required if rejecting):</strong>
+                  <strong>Reason for Rejection:</strong>
                 </label>
                 <textarea
                   id="rejectReason"
@@ -710,33 +736,18 @@ const DashboardPage = ({ trainer, onLogout }) => {
                     onClick={() =>
                       handleAppointmentAction(
                         selectedApp.appointment_id,
-                        "Accepted"
-                      )
-                    }
-                  >
-                    Accept
-                  </button>
-                  <button
+                        "Accepted")}>Accept</button><button
                     className="btn-reject"
                     onClick={() =>
                       handleAppointmentAction(
                         selectedApp.appointment_id,
-                        "Rejected"
-                      )
-                    }
-                  >
-                    Reject
-                  </button>
-                  <button className="btn-close" onClick={closeReviewModal}>
-                    Close
-                  </button>
+                        "Rejected")}>Reject</button>
+                  <button className="btn-close" onClick={closeReviewModal}>Close</button>
                 </div>
               </div>
             ) : (
               <div className="modal-buttons">
-                <button className="btn-close" onClick={closeReviewModal}>
-                  Close
-                </button>
+                <button className="btn-close" onClick={closeReviewModal}>Close</button>
               </div>
             )}
           </div>

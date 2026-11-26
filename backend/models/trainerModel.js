@@ -170,7 +170,6 @@ export const deleteAvailabilitySlot = async (availabilityId) => {
     return result.affectedRows;
 };
 
-// Kunin ang listahan ng clients na naka-assign/may active appointment sa trainer na ito
 export const getTrainerClients = async (userId) => {
     const [rows] = await pool.query(
         `SELECT DISTINCT c.client_id, c.full_name
@@ -199,7 +198,7 @@ export const getFitnessProgressByTrainerUserId = async (userId) => {
     return rows;
 };
 
-// Magdagdag ng bagong fitness progress record (Whole Numbers: Height & Weight, 1 Decimal BMI + Remarks)
+// (Whole Numbers: Height & Weight, 1 Decimal BMI + Remarks)
 export const createFitnessProgress = async (userId, { client_id, height_cm, weight_kg, bmi, remarks }) => {
     const [trainers] = await pool.query(
         'SELECT trainer_id, full_name FROM trainers WHERE user_id = ?',
@@ -256,7 +255,7 @@ export const deleteFitnessProgress = async (progressId) => {
     return result.affectedRows;
 };
 
-// READ-ONLY para sa Client Side (view lang ng sariling fitness progress)
+// view only para sa Client Side
 export const getFitnessProgressByClientUserId = async (clientUserId) => {
     const [rows] = await pool.query(
         `SELECT fp.progress_id, t.full_name AS trainer_name,
