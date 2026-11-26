@@ -76,3 +76,43 @@ export const updateAppointment = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getAvailability = async (req, res, next) => {
+    try {
+        const data = await trainerService.fetchAvailability(req.params.userId);
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const postAvailability = async (req, res) => {
+    try {
+        const newSlot = await trainerService.addAvailability(req.params.userId, req.body);
+        res.status(201).json(newSlot);
+    } catch (e) {
+        res.status(e.statusCode || 500).json({
+            error: e.message || "Failed to add availability"
+        });
+    }
+};
+
+export const deleteAvailability = async (req, res) => {
+    try {
+        const message = await trainerService.removeAvailability(req.params.availabilityId);
+        res.status(200).json({ message });
+    } catch (e) {
+        res.status(e.statusCode || 500).json({
+            error: e.message || "Failed to delete availability"
+        });
+    }
+};
+
+export const getAllTrainers = async (req, res, next) => {
+    try {
+        const trainers = await trainerService.fetchAllTrainers();
+        res.status(200).json(trainers);
+    } catch (error) {
+        next(error);
+    }
+};

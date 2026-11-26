@@ -664,3 +664,37 @@ body,
 .btn-close:hover {
   background-color: #d1d5db;
 }
+
+.avail-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.avail-form select,
+.avail-form input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+.avail-form select {
+  min-width: 240px;
+  cursor: pointer;
+}
+
+.avail-form button {
+  height: 40px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}

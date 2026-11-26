@@ -53,6 +53,15 @@ export const getAppointmentsByUserId = async (userId) => {
     return rows;
 };
 
+// Kunin ang trainer_id at client_id ng isang appointment bago i-accept
+export const getAppointmentDetails = async (appointmentId) => {
+    const [rows] = await pool.query(
+        'SELECT appointment_id, trainer_id, client_id, appointment_status FROM appointments WHERE appointment_id = ?',
+        [appointmentId]
+    );
+    return rows[0] || null;
+};
+
 // Accept or Reject appointment request + save rejection_reason & notify client
 export const updateAppointmentStatus = async (appointmentId, status, rejectionReason = null) => {
     const [result] = await pool.query(
@@ -82,5 +91,82 @@ export const updateAppointmentStatus = async (appointmentId, status, rejectionRe
         );
     }
 
+    return result.affectedRows;
+};
+
+// Get ALL trainers list with active client count (max 35 clients per trainer)
+export const getAllTrainers = async () => {
+    const [rows] = await pool.query(
+        `SELECT t.trainer_id, t.user_id, t.full_name,
+                COUNT(DISTINCT CASE WHEN a.appointment_status IN ('Pending', 'Accepted') THEN a.client_id END) AS active_clients
+         FROM trainers t
+         LEFT JOIN appointments a ON t.trainer_id = a.trainer_id
+         GROUP BY t.trainer_id, t.user_id, t.full_name
+         ORDER BY t.full_name ASC`
+    );
+    return rows;
+};
+
+// Check kung ilang distinct active clients na ang handle ng trainer at kung kasama na ang client na ito
+export const getTrainerClientStats = async (trainerId, clientId = null) => {
+    const [countRows] = await pool.query(
+        `SELECT COUNT(DISTINCT client_id) AS active_clients
+         FROM appointments
+         WHERE trainer_id = ? AND appointment_status IN ('Pending', 'Accepted')`,
+        [trainerId]
+    );
+
+    let isExistingClient = false;
+    if (clientId) {
+        const [existingRows] = await pool.query(
+            `SELECT 1 FROM appointments
+             WHERE trainer_id = ? AND client_id = ? AND appointment_status IN ('Pending', 'Accepted')
+             LIMIT 1`,
+            [trainerId, clientId]
+        );
+        isExistingClient = existingRows.length > 0;
+    }
+
+    return {
+        activeClients: Number(countRows[0].active_clients),
+        isExistingClient
+    };
+};
+
+// Get ALL trainers' availability slots (6:00 AM - 10:00 PM) with Trainer Name
+export const getAvailabilityByUserId = async () => {
+    const [rows] = await pool.query(
+        `SELECT ta.availability_id, ta.trainer_id, t.user_id, t.full_name, ta.available_date, ta.start_time, ta.end_time, ta.slot_status
+         FROM trainer_availability ta
+         JOIN trainers t ON ta.trainer_id = t.trainer_id
+         WHERE ta.start_time >= '06:00:00'
+           AND ta.end_time <= '22:00:00'
+         ORDER BY ta.available_date ASC, ta.start_time ASC`
+    );
+    return rows;
+};
+
+// Add new availability slot for the selected trainer_id
+export const createAvailabilitySlot = async (trainerId, availableDate, startTime, endTime) => {
+    const [trainers] = await pool.query(
+        'SELECT trainer_id, user_id, full_name FROM trainers WHERE trainer_id = ?',
+        [trainerId]
+    );
+    if (trainers.length === 0) return null;
+
+    const { user_id, full_name } = trainers[0];
+    const [result] = await pool.query(
+        'INSERT INTO trainer_availability (trainer_id, available_date, start_time, end_time, slot_status) VALUES (?, ?, ?, ?, ?)',
+        [trainerId, availableDate, startTime, endTime, 'Available']
+    );
+    return { insertId: result.insertId, trainer_id: trainerId, user_id, full_name };
+};
+
+// Delete availability slot (only if still Available)
+export const deleteAvailabilitySlot = async (availabilityId) => {
+    const [result] = await pool.query(
+        "DELETE FROM trainer_availability WHERE availability_id = ? AND slot_status = 'Available'",
+        [availabilityId]
+    );
     return result.affectedRows;
 };

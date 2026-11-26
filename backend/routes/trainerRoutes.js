@@ -9,5 +9,9 @@ router.get('/notifications/:userId', trainerController.getNotifications);
 router.put('/notifications/:userId/read', trainerController.markAllRead);
 router.get('/appointments/:userId', trainerController.getAppointments);
 router.put('/appointments/:appointmentId', trainerController.updateAppointment);
+router.get('/availability/:userId', trainerController.getAvailability);
+router.post('/availability/:userId', trainerController.postAvailability);
+router.delete('/availability/:availabilityId', trainerController.deleteAvailability);
+router.get('/all-trainers', trainerController.getAllTrainers);
 
 export default router;
