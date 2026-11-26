@@ -10,13 +10,13 @@ const formatTime = (timeStr) => {
   return `${hour}:${minuteStr} ${ampm}`;
 };
 
-// Whole number BMI calculation
+// BMI calculation with 1 decimal place
 const calculateBmi = (heightCm, weightKg) => {
   const h = Number(heightCm);
   const w = Number(weightKg);
   if (!h || !w || h <= 0 || w <= 0) return null;
 
-  return Math.round(w / Math.pow(h / 100, 2));
+  return (w / Math.pow(h / 100, 2)).toFixed(1);
 };
 
 const DashboardPage = ({ trainer, onLogout }) => {
@@ -492,7 +492,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
           </div>
         </div>
 
-        {/* BOX 3: Client Fitness Progress (Whole Numbers + Live BMI Calculator) */}
+        {/* BOX 3: Client Fitness Progress (Live BMI Calculator with 1 Decimal Place) */}
         <div className="dash-box dash-box-spaced">
           <h3>Client Fitness Progress</h3>
 
@@ -583,7 +583,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                   filteredProgress.map((rec) => {
                     const rowBmi =
                       Number(rec.bmi) > 0
-                        ? Math.round(Number(rec.bmi))
+                        ? Number(rec.bmi).toFixed(1)
                         : calculateBmi(rec.height_cm, rec.weight_kg);
 
                     return (

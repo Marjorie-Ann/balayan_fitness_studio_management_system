@@ -199,7 +199,7 @@ export const getFitnessProgressByTrainerUserId = async (userId) => {
     return rows;
 };
 
-// Magdagdag ng bagong fitness progress record (Whole Numbers: Height, Weight, BMI; wala pang remarks)
+// Magdagdag ng bagong fitness progress record (Whole Numbers: Height & Weight, 1 Decimal BMI; wala pang remarks)
 export const createFitnessProgress = async (userId, { client_id, height_cm, weight_kg, bmi, remarks }) => {
     const [trainers] = await pool.query(
         'SELECT trainer_id, full_name FROM trainers WHERE user_id = ?',
@@ -210,7 +210,7 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
     const { trainer_id } = trainers[0];
     const cleanHeight = Math.round(Number(height_cm));
     const cleanWeight = Math.round(Number(weight_kg));
-    const cleanBmi = Math.round(Number(bmi));
+    const cleanBmi = Number(Number(bmi).toFixed(1));
 
     const [result] = await pool.query(
         `INSERT INTO fitness_progress (client_id, trainer_id, height_cm, weight_kg, bmi, remarks)
@@ -230,7 +230,7 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
             [
                 clientUserId,
                 'Fitness Progress',
-                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg, BMI: ${cleanBmi}).`
+                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg, BMI: ${cleanBmi.toFixed(1)}).`
             ]
         );
     }

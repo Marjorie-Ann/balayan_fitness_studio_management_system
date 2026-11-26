@@ -182,7 +182,7 @@ export const removeAvailability = async (availabilityId) => {
     return "Availability slot deleted";
 };
 
-// Fitness Progress Services (Whole Numbers: Height, Weight, BMI; wala pang remarks)
+// Fitness Progress Services (Whole Numbers: Height & Weight, 1 Decimal BMI; wala pang remarks)
 export const fetchTrainerClients = async (userId) => {
     return await trainerModel.getTrainerClients(userId);
 };
@@ -206,7 +206,7 @@ export const addFitnessProgress = async (userId, data) => {
     }
 
     const heightMeters = heightNum / 100;
-    const bmiValue = Math.round(weightNum / (heightMeters * heightMeters));
+    const bmiValue = Number((weightNum / (heightMeters * heightMeters)).toFixed(1));
 
     const created = await trainerModel.createFitnessProgress(userId, {
         client_id,
