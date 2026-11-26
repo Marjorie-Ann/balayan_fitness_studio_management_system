@@ -87,7 +87,6 @@ export const changeAppointmentStatus = async (appointmentId, status, rejectionRe
         throw new ValidationError("Rejection reason is required.", 400);
     }
 
-    // Kapag i-a-Accept, i-check kung lagpas na sa 35 clients ang trainer
     if (status === 'Accepted') {
         const appointment = await trainerModel.getAppointmentDetails(appointmentId);
         if (!appointment) {
@@ -130,7 +129,6 @@ export const addAvailability = async (userId, data) => {
         throw new ValidationError("Trainer, date, start time, and end time are required.", 400);
     }
 
-    // Check kung umabot na sa 35 clients ang napiling trainer
     const { activeClients } = await trainerModel.getTrainerClientStats(trainer_id);
     if (activeClients >= MAX_CLIENTS_PER_TRAINER) {
         throw new ValidationError(
@@ -139,7 +137,6 @@ export const addAvailability = async (userId, data) => {
         );
     }
 
-    // Bawal ang nakalipas na petsa
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     if (available_date < todayStr) {
@@ -185,7 +182,7 @@ export const removeAvailability = async (availabilityId) => {
     return "Availability slot deleted";
 };
 
-// Fitness Progress Services (Whole Numbers Only)
+// Fitness Progress Services (Whole Numbers: Height, Weight, BMI; wala pang remarks)
 export const fetchTrainerClients = async (userId) => {
     return await trainerModel.getTrainerClients(userId);
 };
@@ -208,11 +205,14 @@ export const addFitnessProgress = async (userId, data) => {
         throw new ValidationError("Please enter whole numbers only for height and weight.", 400);
     }
 
+    const heightMeters = heightNum / 100;
+    const bmiValue = Math.round(weightNum / (heightMeters * heightMeters));
+
     const created = await trainerModel.createFitnessProgress(userId, {
         client_id,
         height_cm: heightNum,
         weight_kg: weightNum,
-        bmi: 0,
+        bmi: bmiValue,
         remarks: null
     });
 
