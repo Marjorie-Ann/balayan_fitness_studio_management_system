@@ -182,7 +182,15 @@ export const removeAvailability = async (availabilityId) => {
     return "Availability slot deleted";
 };
 
-// Fitness Progress Services (Whole Numbers: Height & Weight, 1 Decimal BMI; wala pang remarks)
+// Helper para sa BMI Remarks / Category
+const getBmiRemarks = (bmi) => {
+    if (bmi < 18.5) return "Underweight";
+    if (bmi < 25) return "Normal";
+    if (bmi < 30) return "Overweight";
+    return "Obese";
+};
+
+// Fitness Progress Services (Whole Numbers: Height & Weight, 1 Decimal BMI + Remarks)
 export const fetchTrainerClients = async (userId) => {
     return await trainerModel.getTrainerClients(userId);
 };
@@ -207,13 +215,14 @@ export const addFitnessProgress = async (userId, data) => {
 
     const heightMeters = heightNum / 100;
     const bmiValue = Number((weightNum / (heightMeters * heightMeters)).toFixed(1));
+    const bmiRemarks = getBmiRemarks(bmiValue);
 
     const created = await trainerModel.createFitnessProgress(userId, {
         client_id,
         height_cm: heightNum,
         weight_kg: weightNum,
         bmi: bmiValue,
-        remarks: null
+        remarks: bmiRemarks
     });
 
     if (!created) {

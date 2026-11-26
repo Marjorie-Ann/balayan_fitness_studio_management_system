@@ -810,3 +810,44 @@ body,
   background-color: #fffdf7;
   font-size: 14px;
 }
+
+/* Live BMI Calculator Bar & Remarks Badges */
+.bmi-preview-bar {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+  background-color: #fffdf7;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bmi-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 5px 9px;
+  border-radius: 4px;
+}
+
+.bmi-normal {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.bmi-underweight {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+
+}
+
+.bmi-overweight {
+  background-color: #fff8e1;
+  color: #e65100;
+}
+
+.bmi-obese {
+  background-color: #ffebee;
+  color: #b71c1c;
+}

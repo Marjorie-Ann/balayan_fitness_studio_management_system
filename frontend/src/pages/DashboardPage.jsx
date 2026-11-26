@@ -10,13 +10,30 @@ const formatTime = (timeStr) => {
   return `${hour}:${minuteStr} ${ampm}`;
 };
 
-// BMI calculation with 1 decimal place
-const calculateBmi = (heightCm, weightKg) => {
+// BMI calculation (1 decimal place) + Remarks / Category
+const calculateBmiInfo = (heightCm, weightKg) => {
   const h = Number(heightCm);
   const w = Number(weightKg);
   if (!h || !w || h <= 0 || w <= 0) return null;
 
-  return (w / Math.pow(h / 100, 2)).toFixed(1);
+  const bmi = w / Math.pow(h / 100, 2);
+  let remarks = "Normal";
+  if (bmi < 18.5) remarks = "Underweight";
+  else if (bmi >= 25 && bmi < 30) remarks = "Overweight";
+  else if (bmi >= 30) remarks = "Obese";
+
+  return {
+    value: bmi.toFixed(1),
+    remarks,
+  };
+};
+
+const getBmiRemarksFromValue = (bmiVal) => {
+  const bmi = Number(bmiVal);
+  if (bmi < 18.5) return "Underweight";
+  if (bmi < 25) return "Normal";
+  if (bmi < 30) return "Overweight";
+  return "Obese";
 };
 
 const DashboardPage = ({ trainer, onLogout }) => {
@@ -139,11 +156,12 @@ const DashboardPage = ({ trainer, onLogout }) => {
     const keyword = searchQuery.toLowerCase();
     return (
       (rec.client_name || "").toLowerCase().includes(keyword) ||
-      (rec.recorded_date || "").toLowerCase().includes(keyword)
+      (rec.recorded_date || "").toLowerCase().includes(keyword) ||
+      (rec.remarks || "").toLowerCase().includes(keyword)
     );
   });
 
-  const liveBmi = calculateBmi(progHeight, progWeight);
+  const liveBmi = calculateBmiInfo(progHeight, progWeight);
 
   const markAllAsRead = async () => {
     await fetch(`http://localhost:3000/trainer/notifications/${userId}/read`, {
@@ -492,7 +510,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
           </div>
         </div>
 
-        {/* BOX 3: Client Fitness Progress (Live BMI Calculator with 1 Decimal Place) */}
+        {/* BOX 3: Client Fitness Progress (Live BMI Calculator + Remarks) */}
         <div className="dash-box dash-box-spaced">
           <h3>Client Fitness Progress</h3>
 
@@ -546,12 +564,17 @@ const DashboardPage = ({ trainer, onLogout }) => {
             </button>
           </form>
 
-          {/* Live BMI Calculator Preview */}
+          {/* Live BMI Calculator Preview with Remarks */}
           <div className="bmi-preview-bar">
             <span>
               <strong>BMI Calculator:</strong>{" "}
-              {liveBmi !== null ? (
-                <strong>{liveBmi}</strong>
+              {liveBmi ? (
+                <>
+                  <strong>{liveBmi.value}</strong>{" "}
+                  <span className={`bmi-badge bmi-${liveBmi.remarks.toLowerCase()}`}>
+                    {liveBmi.remarks}
+                  </span>
+                </>
               ) : (
                 "Enter height (cm) and weight (kg) to calculate BMI"
               )}
@@ -569,22 +592,29 @@ const DashboardPage = ({ trainer, onLogout }) => {
                   <th>Height (cm)</th>
                   <th>Weight (kg)</th>
                   <th>BMI</th>
+                  <th>Remarks</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProgress.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="table-empty">
+                    <td colSpan="7" className="table-empty">
                       No fitness progress records yet.
                     </td>
                   </tr>
                 ) : (
                   filteredProgress.map((rec) => {
-                    const rowBmi =
-                      Number(rec.bmi) > 0
-                        ? Number(rec.bmi).toFixed(1)
-                        : calculateBmi(rec.height_cm, rec.weight_kg);
+                    const hasStoredBmi = Number(rec.bmi) > 0;
+                    const fallback = calculateBmiInfo(rec.height_cm, rec.weight_kg);
+                    const bmiValue = hasStoredBmi
+                      ? Number(rec.bmi).toFixed(1)
+                      : fallback?.value || "-";
+                    const bmiRemarks =
+                      rec.remarks ||
+                      (hasStoredBmi
+                        ? getBmiRemarksFromValue(rec.bmi)
+                        : fallback?.remarks || "");
 
                     return (
                       <tr key={rec.progress_id}>
@@ -593,7 +623,18 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         <td>{Math.round(Number(rec.height_cm))} cm</td>
                         <td>{Math.round(Number(rec.weight_kg))} kg</td>
                         <td>
-                          <strong>{rowBmi ?? "-"}</strong>
+                          <strong>{bmiValue}</strong>
+                        </td>
+                        <td>
+                          {bmiRemarks ? (
+                            <span
+                              className={`bmi-badge bmi-${bmiRemarks.toLowerCase()}`}
+                            >
+                              {bmiRemarks}
+                            </span>
+                          ) : (
+                            "-"
+                          )}
                         </td>
                         <td>
                           <button

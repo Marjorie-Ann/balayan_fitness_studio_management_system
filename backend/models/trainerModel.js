@@ -199,7 +199,7 @@ export const getFitnessProgressByTrainerUserId = async (userId) => {
     return rows;
 };
 
-// Magdagdag ng bagong fitness progress record (Whole Numbers: Height & Weight, 1 Decimal BMI; wala pang remarks)
+// Magdagdag ng bagong fitness progress record (Whole Numbers: Height & Weight, 1 Decimal BMI + Remarks)
 export const createFitnessProgress = async (userId, { client_id, height_cm, weight_kg, bmi, remarks }) => {
     const [trainers] = await pool.query(
         'SELECT trainer_id, full_name FROM trainers WHERE user_id = ?',
@@ -230,7 +230,7 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
             [
                 clientUserId,
                 'Fitness Progress',
-                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg, BMI: ${cleanBmi.toFixed(1)}).`
+                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg, BMI: ${cleanBmi.toFixed(1)} - ${remarks}).`
             ]
         );
     }
@@ -242,7 +242,7 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
         height_cm: cleanHeight,
         weight_kg: cleanWeight,
         bmi: cleanBmi,
-        remarks: null,
+        remarks: remarks || '',
         recorded_date: new Date().toISOString()
     };
 };
@@ -269,4 +269,4 @@ export const getFitnessProgressByClientUserId = async (clientUserId) => {
         [clientUserId]
     );
     return rows;
-};
+}; 
