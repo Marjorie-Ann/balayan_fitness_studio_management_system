@@ -71,3 +71,12 @@ export const readAllNotifications = async (userId) => {
     await trainerModel.markNotificationsAsRead(userId);
     return "All notifications marked as read";
 };
+
+export const fetchAppointments = async (userId) => {
+    return await trainerModel.getAppointmentsByUserId(userId);
+};
+
+export const changeAppointmentStatus = async (appointmentId, status, rejectionReason) => {
+    await trainerModel.updateAppointmentStatus(appointmentId, status, rejectionReason);
+    return "Appointment updated";
+};

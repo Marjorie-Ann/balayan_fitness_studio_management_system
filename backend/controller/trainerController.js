@@ -9,7 +9,8 @@ export const login = async (req, res) => {
         const result = await trainerService.login(user);
         res.status(200).json({
             success: true,
-            message: result
+            message: result.message,
+            trainer: result.trainer
         });
     } catch (e) {
         console.log(e);
@@ -51,6 +52,25 @@ export const getNotifications = async (req, res, next) => {
 export const markAllRead = async (req, res, next) => {
     try {
         const message = await trainerService.readAllNotifications(req.params.userId);
+        res.status(200).json({ message });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAppointments = async (req, res, next) => {
+    try {
+        const data = await trainerService.fetchAppointments(req.params.userId);
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateAppointment = async (req, res, next) => {
+    try {
+        const { status, rejection_reason } = req.body;
+        const message = await trainerService.changeAppointmentStatus(req.params.appointmentId, status, rejection_reason);
         res.status(200).json({ message });
     } catch (error) {
         next(error);
