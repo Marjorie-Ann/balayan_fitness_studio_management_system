@@ -37,3 +37,22 @@ export const changePassword = async (req, res) => {
         });
     }
 };
+
+// Trainer Notification
+export const getNotifications = async (req, res, next) => {
+    try {
+        const notifications = await trainerService.fetchNotifications(req.params.userId);
+        res.status(200).json(notifications);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const markAllRead = async (req, res, next) => {
+    try {
+        const message = await trainerService.readAllNotifications(req.params.userId);
+        res.status(200).json({ message });
+    } catch (error) {
+        next(error);
+    }
+};

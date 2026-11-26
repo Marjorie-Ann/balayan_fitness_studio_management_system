@@ -6,13 +6,16 @@ import './style.css';
 
 export default function App() {
   const [page, setPage] = useState('signin');
-  const [trainerName, setTrainerName] = useState('Trainer');
+  const [trainer, setTrainer] = useState(null);
 
   if (page === 'dashboard') {
     return (
       <DashboardPage
-        trainerName={trainerName}
-        onLogout={() => setPage('signin')}
+        trainer={trainer}
+        onLogout={() => {
+          setTrainer(null);
+          setPage('signin');
+        }}
       />
     );
   }
@@ -22,8 +25,8 @@ export default function App() {
       {page === 'signin' ? (
         <SignInPage
           onGoToChangePassword={() => setPage('changepass')}
-          onLoginSuccess={(name) => {
-            setTrainerName(name);
+          onLoginSuccess={(loggedTrainer) => {
+            setTrainer(loggedTrainer);
             setPage('dashboard');
           }}
         />

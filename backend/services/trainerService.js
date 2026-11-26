@@ -62,3 +62,12 @@ export const changePassword = async (data) => {
     await trainerModel.updatePassword(trainer.user_id, data.newPassword);
     return "Password updated successfully";
 };
+
+export const fetchNotifications = async (userId) => {
+    return await trainerModel.getNotificationsByUserId(userId);
+};
+
+export const readAllNotifications = async (userId) => {
+    await trainerModel.markNotificationsAsRead(userId);
+    return "All notifications marked as read";
+};

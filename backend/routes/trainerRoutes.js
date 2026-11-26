@@ -5,5 +5,7 @@ const router = express.Router();
 
 router.post('/login', trainerController.login);
 router.post('/change-password', trainerController.changePassword);
+router.get('/notifications/:userId', trainerController.getNotifications);
+router.put('/notifications/:userId/read', trainerController.markAllRead);
 
 export default router;
