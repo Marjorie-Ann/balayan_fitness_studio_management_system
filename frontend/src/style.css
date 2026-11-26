@@ -174,7 +174,7 @@ body,
 .dash-header {
   background: #111;
   color: #fff;
-  border-bottom: 3px solid #d4af37;
+  border-bottom: 3px solid rgb(232, 188, 46);
   padding: 15px 25px;
   display: flex;
   justify-content: space-between;
@@ -188,13 +188,13 @@ body,
 .dash-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #d4af37;
+  color: rgb(232, 188, 46);
 }
 
 .dash-search {
   padding: 8px 12px;
   width: 280px;
-  border: 1px solid #d4af37;
+  border: 1px solid rgb(232, 188, 46);
   border-radius: 4px;
 }
 
@@ -206,7 +206,7 @@ body,
 
 .dash-actions button {
   padding: 8px 12px;
-  border: 1px solid #d4af37;
+  border: 1px solid rgb(232, 188, 46);
   background: transparent;
   color: #fff;
   border-radius: 4px;
@@ -224,7 +224,7 @@ body,
   width: 280px;
   background: #fff;
   color: #111;
-  border: 1px solid #d4af37;
+  border: 1px solid rgb(232, 188, 46);
   padding: 10px;
   z-index: 10;
 }
@@ -238,7 +238,7 @@ body,
 
 .notif-menu button {
   margin-top: 8px;
-  background: #d4af37;
+  background: rgb(232, 188, 46);
   color: #111;
   border: none;
   width: 100%;
@@ -261,7 +261,7 @@ body,
 
 .summary-card {
   background: #fff;
-  border-left: 4px solid #d4af37;
+  border-left: 4px solid rgb(232, 188, 46);
   padding: 14px;
   border-radius: 4px;
 }
@@ -338,7 +338,7 @@ body,
 
 .bmi-live {
   background: #fffbeb;
-  border: 1px solid #d4af37;
+  border: 1px solid rgb(232, 188, 46);
   padding: 8px 12px;
   margin-bottom: 12px;
   font-size: 14px;
@@ -365,4 +365,43 @@ body,
   .summary-row {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+.dash-search {
+  padding: 10px 18px;
+  width: 420px;
+  max-width: 100%;
+  border: 2px solid rgb(232, 188, 46);
+  border-radius: 25px;
+  outline: none;
+}
+
+.dash-actions button {
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.dash-actions button {
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.dash-actions button:hover,
+.dash-actions button:active,
+.dash-actions button:focus {
+  background: #d4af37;
+  color: #111;
+  outline: none;
 }

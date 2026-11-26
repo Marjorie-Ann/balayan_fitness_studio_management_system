@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 const DashboardPage = ({ trainer, onLogout }) => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [showNotif, setShowNotif] = useState(true);
   const [notifications, setNotifications] = useState([]);
 
@@ -22,6 +23,14 @@ const DashboardPage = ({ trainer, onLogout }) => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const filteredNotifications = notifications.filter((n) => {
+    const keyword = searchQuery.toLowerCase();
+    return (
+      (n.text && n.text.toLowerCase().includes(keyword)) ||
+      (n.type && n.type.toLowerCase().includes(keyword))
+    );
+  });
+
   const markAllAsRead = async () => {
     if (!userId) return;
     try {
@@ -39,6 +48,14 @@ const DashboardPage = ({ trainer, onLogout }) => {
       <header className="dash-header">
         <h2>Welcome, {trainerName}</h2>
 
+        <input
+          type="text"
+          className="dash-search"
+          placeholder="Search notifications, clients, slots..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+
         <div className="dash-actions">
           <div className="notif-box">
             <button onClick={() => setShowNotif(!showNotif)}>
@@ -47,10 +64,10 @@ const DashboardPage = ({ trainer, onLogout }) => {
 
             {showNotif && (
               <div className="notif-menu">
-                {notifications.length === 0 ? (
-                  <p>No notifications</p>
+                {filteredNotifications.length === 0 ? (
+                  <p>No notifications found</p>
                 ) : (
-                  notifications.map((n) => (
+                  filteredNotifications.map((n) => (
                     <p
                       key={n.id}
                       style={{ fontWeight: n.read ? "normal" : "bold" }}
@@ -72,7 +89,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
       </header>
 
       <main className="dash-content">
-        {/* Notifications lang muna ang laman */}
+        {/* Notifications at Search Bar lang muna ang laman */}
       </main>
     </div>
   );
