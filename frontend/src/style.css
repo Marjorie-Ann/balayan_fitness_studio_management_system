@@ -8,7 +8,7 @@
 
 body {
     padding: 0;
-    margin: 0;
+    margin: 0; 
 }
 
 .image {
@@ -697,4 +697,107 @@ body,
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+}
+
+/* Dashboard Spacing & Utility Classes */
+.dash-box-spaced {
+  margin-top: 24px;
+}
+
+.table-spaced {
+  margin-top: 14px;
+}
+
+.table-empty {
+  text-align: center;
+  color: #666666;
+}
+
+/* Notifications Read/Unread */
+.notif-read {
+  font-weight: normal;
+}
+
+.notif-unread {
+  font-weight: bold;
+}
+
+/* Status & Validation Messages */
+.status-available {
+  color: #16a34a;
+}
+
+.status-booked {
+  color: #d97706;
+}
+
+.rejection-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+.rejection-modal-text {
+  color: #dc2626;
+}
+
+.form-error-msg {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* Pantay-pantay na sukat para sa Client Fitness Progress Form */
+.progress-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.progress-form select,
+.progress-form input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #000000;
+  font-family: inherit;
+  font-size: 14px; 
+  box-sizing: border-box;
+  outline: none;
+  margin: 0;
+}
+
+.progress-form select:focus,
+.progress-form input:focus {
+  border-color: #b5952f;
+}
+
+.progress-form button {
+  width: 100%;
+  height: 44px;
+  border: 1.5px solid #d4af37;
+  border-radius: 8px;
+  background-color: #000000;
+  color: #d4af37;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  box-sizing: border-box;
+  cursor: pointer;
+  margin: 0;
+}
+
+.progress-form button:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .progress-form {
+    grid-template-columns: 1fr;
+  }
 }

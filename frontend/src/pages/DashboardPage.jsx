@@ -29,6 +29,14 @@ const DashboardPage = ({ trainer, onLogout }) => {
   const [availEnd, setAvailEnd] = useState("09:00");
   const [availError, setAvailError] = useState("");
 
+  // States para sa Fitness Progress (Trainer-only input)
+  const [myClients, setMyClients] = useState([]);
+  const [progressRecords, setProgressRecords] = useState([]);
+  const [progClientId, setProgClientId] = useState("");
+  const [progHeight, setProgHeight] = useState("");
+  const [progWeight, setProgWeight] = useState("");
+  const [progError, setProgError] = useState("");
+
   // Kunin ang petsa ngayon (YYYY-MM-DD) para i-disable ang past dates sa calendar picker
   const now = new Date();
   const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -62,13 +70,27 @@ const DashboardPage = ({ trainer, onLogout }) => {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setTrainersList(data);
-          // Piliin ang current trainer kung hindi pa 35/35 full, kung full ay pumili ng ibang available trainer
           const current = data.find((t) => t.user_id === userId && Number(t.active_clients) < 35);
           const firstAvailable = data.find((t) => Number(t.active_clients) < 35);
           setSelectedTrainerId(
             current ? current.trainer_id : firstAvailable ? firstAvailable.trainer_id : data[0].trainer_id
           );
         }
+      });
+
+    fetch(`http://localhost:3000/trainer/my-clients/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMyClients(data);
+          if (data.length > 0) setProgClientId(data[0].client_id);
+        }
+      });
+
+    fetch(`http://localhost:3000/trainer/fitness-progress/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProgressRecords(data);
       });
   }, [userId]);
 
@@ -101,6 +123,14 @@ const DashboardPage = ({ trainer, onLogout }) => {
       (slot.full_name || "").toLowerCase().includes(keyword) ||
       slot.available_date.toLowerCase().includes(keyword) ||
       slot.slot_status.toLowerCase().includes(keyword)
+    );
+  });
+
+  const filteredProgress = progressRecords.filter((rec) => {
+    const keyword = searchQuery.toLowerCase();
+    return (
+      (rec.client_name || "").toLowerCase().includes(keyword) ||
+      (rec.recorded_date || "").toLowerCase().includes(keyword)
     );
   });
 
@@ -157,11 +187,19 @@ const DashboardPage = ({ trainer, onLogout }) => {
       )
     );
 
-    // I-refresh ang client count ng trainers
     fetch(`http://localhost:3000/trainer/all-trainers`)
       .then((r) => r.json())
       .then((list) => {
         if (Array.isArray(list)) setTrainersList(list);
+      });
+
+    fetch(`http://localhost:3000/trainer/my-clients/${userId}`)
+      .then((r) => r.json())
+      .then((list) => {
+        if (Array.isArray(list)) {
+          setMyClients(list);
+          if (!progClientId && list.length > 0) setProgClientId(list[0].client_id);
+        }
       });
 
     closeReviewModal();
@@ -202,6 +240,41 @@ const DashboardPage = ({ trainer, onLogout }) => {
     }
   };
 
+  const handleAddProgress = async (e) => {
+    e.preventDefault();
+    setProgError("");
+
+    const res = await fetch(`http://localhost:3000/trainer/fitness-progress/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: progClientId,
+        height_cm: progHeight,
+        weight_kg: progWeight,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setProgError(data.error || "Failed to record fitness progress.");
+      return;
+    }
+
+    setProgressRecords([data, ...progressRecords]);
+    setProgHeight("");
+    setProgWeight("");
+  };
+
+  const handleDeleteProgress = async (progressId) => {
+    const res = await fetch(`http://localhost:3000/trainer/fitness-progress/${progressId}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      setProgressRecords(progressRecords.filter((r) => r.progress_id !== progressId));
+    }
+  };
+
   return (
     <div className="dash-wrapper">
       <header className="dash-header">
@@ -210,7 +283,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
         <input
           type="text"
           className="dash-search"
-          placeholder="Search notifications, clients, trainers, schedules..."
+          placeholder="Search notifications, clients, trainers, schedules, progress..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -227,10 +300,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                   <p>No notifications found</p>
                 ) : (
                   filteredNotifications.map((n) => (
-                    <p
-                      key={n.id}
-                      style={{ fontWeight: n.read ? "normal" : "bold" }}
-                    >
+                    <p key={n.id} className={n.read ? "notif-read" : "notif-unread"}>
                       <strong>[{n.type}]</strong> {n.text}
                     </p>
                   ))
@@ -266,7 +336,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
               <tbody>
                 {filteredAppointments.length === 0 ? (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: "center", color: "#666" }}>
+                    <td colSpan="5" className="table-empty">
                       No appointment requests found.
                     </td>
                   </tr>
@@ -281,13 +351,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                       <td>
                         <strong>{app.appointment_status}</strong>
                         {app.rejection_reason && (
-                          <p
-                            style={{
-                              color: "#dc2626",
-                              fontSize: "12px",
-                              margin: "4px 0 0",
-                            }}
-                          >
+                          <p className="rejection-text">
                             Reason: {app.rejection_reason}
                           </p>
                         )}
@@ -309,7 +373,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
         </div>
 
         {/* BOX 2: Trainer Availability (All Trainers) */}
-        <div className="dash-box" style={{ marginTop: "24px" }}>
+        <div className="dash-box dash-box-spaced">
           <h3>Trainer Availability</h3>
 
           <form className="avail-form" onSubmit={handleAddAvailability}>
@@ -358,13 +422,9 @@ const DashboardPage = ({ trainer, onLogout }) => {
             </button>
           </form>
 
-          {availError && (
-            <p style={{ color: "#dc2626", fontSize: "13px", marginTop: "8px" }}>
-              {availError}
-            </p>
-          )}
+          {availError && <p className="form-error-msg">{availError}</p>}
 
-          <div className="table-scroll" style={{ marginTop: "14px" }}>
+          <div className="table-scroll table-spaced">
             <table className="simple-table">
               <thead>
                 <tr>
@@ -378,7 +438,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
               <tbody>
                 {filteredAvailability.length === 0 ? (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: "center", color: "#666" }}>
+                    <td colSpan="5" className="table-empty">
                       No availability schedules added yet.
                     </td>
                   </tr>
@@ -392,9 +452,11 @@ const DashboardPage = ({ trainer, onLogout }) => {
                       </td>
                       <td>
                         <strong
-                          style={{
-                            color: slot.slot_status === "Available" ? "#16a34a" : "#d97706",
-                          }}
+                          className={
+                            slot.slot_status === "Available"
+                              ? "status-available"
+                              : "status-booked"
+                          }
                         >
                           {slot.slot_status}
                         </strong>
@@ -410,6 +472,103 @@ const DashboardPage = ({ trainer, onLogout }) => {
                         ) : (
                           <span>Booked</span>
                         )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* BOX 3: Client Fitness Progress (Trainer Input Only - Whole Numbers) */}
+        <div className="dash-box dash-box-spaced">
+          <h3>Client Fitness Progress</h3>
+
+          <form className="progress-form" onSubmit={handleAddProgress}>
+            <select
+              value={progClientId}
+              onChange={(e) => setProgClientId(Number(e.target.value))}
+              required
+            >
+              {myClients.length === 0 ? (
+                <option value="">No assigned clients yet</option>
+              ) : (
+                myClients.map((c) => (
+                  <option key={c.client_id} value={c.client_id}>
+                    {c.full_name}
+                  </option>
+                ))
+              )}
+            </select>
+
+            <input
+              type="number"
+              step="1"
+              min="50"
+              max="300"
+              placeholder="Height (cm)"
+              value={progHeight}
+              onKeyDown={(e) => [".", ",", "e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+              onChange={(e) => setProgHeight(e.target.value.replace(/\D/g, ""))}
+              required
+            />
+
+            <input
+              type="number"
+              step="1"
+              min="20"
+              max="500"
+              placeholder="Weight (kg)"
+              value={progWeight}
+              onKeyDown={(e) => [".", ",", "e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+              onChange={(e) => setProgWeight(e.target.value.replace(/\D/g, ""))}
+              required
+            />
+
+            <button
+              type="submit"
+              className="btn-review"
+              disabled={myClients.length === 0}
+            >
+              + Record Progress
+            </button>
+          </form>
+
+          {progError && <p className="form-error-msg">{progError}</p>}
+
+          <div className="table-scroll table-spaced">
+            <table className="simple-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Date Recorded</th>
+                  <th>Height (cm)</th>
+                  <th>Weight (kg)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProgress.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="table-empty">
+                      No fitness progress records yet.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProgress.map((rec) => (
+                    <tr key={rec.progress_id}>
+                      <td>{rec.client_name}</td>
+                      <td>{rec.recorded_date ? rec.recorded_date.split("T")[0] : ""}</td>
+                      <td>{Math.round(Number(rec.height_cm))} cm</td>
+                      <td>{Math.round(Number(rec.weight_kg))} kg</td>
+                      <td>
+                        <button
+                          className="btn-reject"
+                          onClick={() => handleDeleteProgress(rec.progress_id)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -450,7 +609,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
                 {selectedApp.appointment_status}
               </p>
               {selectedApp.rejection_reason && (
-                <p style={{ color: "#dc2626" }}>
+                <p className="rejection-modal-text">
                   <strong>Rejection Reason:</strong>{" "}
                   {selectedApp.rejection_reason}
                 </p>
