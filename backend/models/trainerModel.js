@@ -69,7 +69,6 @@ export const updateAppointmentStatus = async (appointmentId, status, rejectionRe
         [status, status === 'Rejected' ? rejectionReason : null, appointmentId]
     );
 
-    // Kunin ang client user_id at schedule para ma-notify ang client
     const [rows] = await pool.query(
         `SELECT c.user_id, a.appointment_date, a.start_time 
          FROM appointments a 
@@ -200,7 +199,7 @@ export const getFitnessProgressByTrainerUserId = async (userId) => {
     return rows;
 };
 
-// Magdagdag ng bagong fitness progress record (Whole Numbers Only) + notify client
+// Magdagdag ng bagong fitness progress record (Whole Numbers: Height & Weight, 1 Decimal BMI; wala pang remarks)
 export const createFitnessProgress = async (userId, { client_id, height_cm, weight_kg, bmi, remarks }) => {
     const [trainers] = await pool.query(
         'SELECT trainer_id, full_name FROM trainers WHERE user_id = ?',
@@ -211,11 +210,12 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
     const { trainer_id } = trainers[0];
     const cleanHeight = Math.round(Number(height_cm));
     const cleanWeight = Math.round(Number(weight_kg));
+    const cleanBmi = Number(Number(bmi).toFixed(1));
 
     const [result] = await pool.query(
         `INSERT INTO fitness_progress (client_id, trainer_id, height_cm, weight_kg, bmi, remarks)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [client_id, trainer_id, cleanHeight, cleanWeight, bmi, remarks || null]
+        [client_id, trainer_id, cleanHeight, cleanWeight, cleanBmi, remarks || null]
     );
 
     const [clients] = await pool.query(
@@ -230,7 +230,7 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
             [
                 clientUserId,
                 'Fitness Progress',
-                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg).`
+                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg, BMI: ${cleanBmi.toFixed(1)}).`
             ]
         );
     }
@@ -241,8 +241,8 @@ export const createFitnessProgress = async (userId, { client_id, height_cm, weig
         client_name: clients[0]?.full_name || 'Client',
         height_cm: cleanHeight,
         weight_kg: cleanWeight,
-        bmi: 0,
-        remarks: remarks || '',
+        bmi: cleanBmi,
+        remarks: null,
         recorded_date: new Date().toISOString()
     };
 };

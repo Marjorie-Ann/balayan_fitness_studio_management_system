@@ -10,6 +10,15 @@ const formatTime = (timeStr) => {
   return `${hour}:${minuteStr} ${ampm}`;
 };
 
+// BMI calculation with 1 decimal place
+const calculateBmi = (heightCm, weightKg) => {
+  const h = Number(heightCm);
+  const w = Number(weightKg);
+  if (!h || !w || h <= 0 || w <= 0) return null;
+
+  return (w / Math.pow(h / 100, 2)).toFixed(1);
+};
+
 const DashboardPage = ({ trainer, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotif, setShowNotif] = useState(false);
@@ -133,6 +142,8 @@ const DashboardPage = ({ trainer, onLogout }) => {
       (rec.recorded_date || "").toLowerCase().includes(keyword)
     );
   });
+
+  const liveBmi = calculateBmi(progHeight, progWeight);
 
   const markAllAsRead = async () => {
     await fetch(`http://localhost:3000/trainer/notifications/${userId}/read`, {
@@ -481,7 +492,7 @@ const DashboardPage = ({ trainer, onLogout }) => {
           </div>
         </div>
 
-        {/* BOX 3: Client Fitness Progress (Trainer Input Only - Whole Numbers) */}
+        {/* BOX 3: Client Fitness Progress (Live BMI Calculator with 1 Decimal Place) */}
         <div className="dash-box dash-box-spaced">
           <h3>Client Fitness Progress</h3>
 
@@ -535,6 +546,18 @@ const DashboardPage = ({ trainer, onLogout }) => {
             </button>
           </form>
 
+          {/* Live BMI Calculator Preview */}
+          <div className="bmi-preview-bar">
+            <span>
+              <strong>BMI Calculator:</strong>{" "}
+              {liveBmi !== null ? (
+                <strong>{liveBmi}</strong>
+              ) : (
+                "Enter height (cm) and weight (kg) to calculate BMI"
+              )}
+            </span>
+          </div>
+
           {progError && <p className="form-error-msg">{progError}</p>}
 
           <div className="table-scroll table-spaced">
@@ -545,33 +568,44 @@ const DashboardPage = ({ trainer, onLogout }) => {
                   <th>Date Recorded</th>
                   <th>Height (cm)</th>
                   <th>Weight (kg)</th>
+                  <th>BMI</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProgress.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="table-empty">
+                    <td colSpan="6" className="table-empty">
                       No fitness progress records yet.
                     </td>
                   </tr>
                 ) : (
-                  filteredProgress.map((rec) => (
-                    <tr key={rec.progress_id}>
-                      <td>{rec.client_name}</td>
-                      <td>{rec.recorded_date ? rec.recorded_date.split("T")[0] : ""}</td>
-                      <td>{Math.round(Number(rec.height_cm))} cm</td>
-                      <td>{Math.round(Number(rec.weight_kg))} kg</td>
-                      <td>
-                        <button
-                          className="btn-reject"
-                          onClick={() => handleDeleteProgress(rec.progress_id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredProgress.map((rec) => {
+                    const rowBmi =
+                      Number(rec.bmi) > 0
+                        ? Number(rec.bmi).toFixed(1)
+                        : calculateBmi(rec.height_cm, rec.weight_kg);
+
+                    return (
+                      <tr key={rec.progress_id}>
+                        <td>{rec.client_name}</td>
+                        <td>{rec.recorded_date ? rec.recorded_date.split("T")[0] : ""}</td>
+                        <td>{Math.round(Number(rec.height_cm))} cm</td>
+                        <td>{Math.round(Number(rec.weight_kg))} kg</td>
+                        <td>
+                          <strong>{rowBmi ?? "-"}</strong>
+                        </td>
+                        <td>
+                          <button
+                            className="btn-reject"
+                            onClick={() => handleDeleteProgress(rec.progress_id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
