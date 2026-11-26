@@ -14,4 +14,11 @@ router.post('/availability/:userId', trainerController.postAvailability);
 router.delete('/availability/:availabilityId', trainerController.deleteAvailability);
 router.get('/all-trainers', trainerController.getAllTrainers);
 
-export default router;
+// Fitness Progress (Trainer write/manage, Client read-only)
+router.get('/my-clients/:userId', trainerController.getTrainerClients);
+router.get('/fitness-progress/:userId', trainerController.getFitnessProgress);
+router.post('/fitness-progress/:userId', trainerController.postFitnessProgress);
+router.delete('/fitness-progress/:progressId', trainerController.deleteFitnessProgress);
+router.get('/client-progress/:userId', trainerController.getClientFitnessProgress);
+
+export default router; 

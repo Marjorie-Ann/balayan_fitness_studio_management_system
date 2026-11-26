@@ -170,3 +170,103 @@ export const deleteAvailabilitySlot = async (availabilityId) => {
     );
     return result.affectedRows;
 };
+
+// Kunin ang listahan ng clients na naka-assign/may active appointment sa trainer na ito
+export const getTrainerClients = async (userId) => {
+    const [rows] = await pool.query(
+        `SELECT DISTINCT c.client_id, c.full_name
+         FROM clients c
+         JOIN appointments a ON c.client_id = a.client_id
+         JOIN trainers t ON a.trainer_id = t.trainer_id
+         WHERE t.user_id = ? AND a.appointment_status IN ('Pending', 'Accepted')
+         ORDER BY c.full_name ASC`,
+        [userId]
+    );
+    return rows;
+};
+
+// Kunin ang lahat ng fitness progress records na ni-record ng trainer na ito
+export const getFitnessProgressByTrainerUserId = async (userId) => {
+    const [rows] = await pool.query(
+        `SELECT fp.progress_id, fp.client_id, c.full_name AS client_name,
+                fp.height_cm, fp.weight_kg, fp.bmi, fp.remarks, fp.recorded_date
+         FROM fitness_progress fp
+         JOIN trainers t ON fp.trainer_id = t.trainer_id
+         JOIN clients c ON fp.client_id = c.client_id
+         WHERE t.user_id = ?
+         ORDER BY fp.recorded_date DESC, fp.progress_id DESC`,
+        [userId]
+    );
+    return rows;
+};
+
+// Magdagdag ng bagong fitness progress record (Whole Numbers Only) + notify client
+export const createFitnessProgress = async (userId, { client_id, height_cm, weight_kg, bmi, remarks }) => {
+    const [trainers] = await pool.query(
+        'SELECT trainer_id, full_name FROM trainers WHERE user_id = ?',
+        [userId]
+    );
+    if (trainers.length === 0) return null;
+
+    const { trainer_id } = trainers[0];
+    const cleanHeight = Math.round(Number(height_cm));
+    const cleanWeight = Math.round(Number(weight_kg));
+
+    const [result] = await pool.query(
+        `INSERT INTO fitness_progress (client_id, trainer_id, height_cm, weight_kg, bmi, remarks)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [client_id, trainer_id, cleanHeight, cleanWeight, bmi, remarks || null]
+    );
+
+    const [clients] = await pool.query(
+        'SELECT user_id, full_name FROM clients WHERE client_id = ?',
+        [client_id]
+    );
+
+    if (clients.length > 0) {
+        const clientUserId = clients[0].user_id;
+        await pool.query(
+            'INSERT INTO notifications (user_id, notification_type, message, is_read) VALUES (?, ?, ?, 0)',
+            [
+                clientUserId,
+                'Fitness Progress',
+                `Your trainer updated your fitness progress (Height: ${cleanHeight} cm, Weight: ${cleanWeight} kg).`
+            ]
+        );
+    }
+
+    return {
+        progress_id: result.insertId,
+        client_id: Number(client_id),
+        client_name: clients[0]?.full_name || 'Client',
+        height_cm: cleanHeight,
+        weight_kg: cleanWeight,
+        bmi: 0,
+        remarks: remarks || '',
+        recorded_date: new Date().toISOString()
+    };
+};
+
+// Delete fitness progress record
+export const deleteFitnessProgress = async (progressId) => {
+    const [result] = await pool.query(
+        'DELETE FROM fitness_progress WHERE progress_id = ?',
+        [progressId]
+    );
+    return result.affectedRows;
+};
+
+// READ-ONLY para sa Client Side (view lang ng sariling fitness progress)
+export const getFitnessProgressByClientUserId = async (clientUserId) => {
+    const [rows] = await pool.query(
+        `SELECT fp.progress_id, t.full_name AS trainer_name,
+                fp.height_cm, fp.weight_kg, fp.bmi, fp.remarks, fp.recorded_date
+         FROM fitness_progress fp
+         JOIN clients c ON fp.client_id = c.client_id
+         LEFT JOIN trainers t ON fp.trainer_id = t.trainer_id
+         WHERE c.user_id = ?
+         ORDER BY fp.recorded_date DESC, fp.progress_id DESC`,
+        [clientUserId]
+    );
+    return rows;
+};

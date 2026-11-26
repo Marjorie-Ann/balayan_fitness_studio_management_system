@@ -184,3 +184,53 @@ export const removeAvailability = async (availabilityId) => {
     }
     return "Availability slot deleted";
 };
+
+// Fitness Progress Services (Whole Numbers Only)
+export const fetchTrainerClients = async (userId) => {
+    return await trainerModel.getTrainerClients(userId);
+};
+
+export const fetchTrainerFitnessProgress = async (userId) => {
+    return await trainerModel.getFitnessProgressByTrainerUserId(userId);
+};
+
+export const addFitnessProgress = async (userId, data) => {
+    const { client_id, height_cm, weight_kg } = data;
+
+    if (!client_id || !height_cm || !weight_kg) {
+        throw new ValidationError("Client, height (cm), and weight (kg) are required.", 400);
+    }
+
+    const heightNum = Number(height_cm);
+    const weightNum = Number(weight_kg);
+
+    if (!Number.isInteger(heightNum) || heightNum <= 0 || !Number.isInteger(weightNum) || weightNum <= 0) {
+        throw new ValidationError("Please enter whole numbers only for height and weight.", 400);
+    }
+
+    const created = await trainerModel.createFitnessProgress(userId, {
+        client_id,
+        height_cm: heightNum,
+        weight_kg: weightNum,
+        bmi: 0,
+        remarks: null
+    });
+
+    if (!created) {
+        throw new ValidationError("Trainer profile not found.", 404);
+    }
+
+    return created;
+};
+
+export const removeFitnessProgress = async (progressId) => {
+    const deleted = await trainerModel.deleteFitnessProgress(progressId);
+    if (deleted === 0) {
+        throw new ValidationError("Fitness progress record not found.", 404);
+    }
+    return "Fitness progress record deleted";
+};
+
+export const fetchClientFitnessProgress = async (clientUserId) => {
+    return await trainerModel.getFitnessProgressByClientUserId(clientUserId);
+};

@@ -116,3 +116,48 @@ export const getAllTrainers = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getTrainerClients = async (req, res, next) => {
+    try {
+        const clients = await trainerService.fetchTrainerClients(req.params.userId);
+        res.status(200).json(clients);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getFitnessProgress = async (req, res, next) => {
+    try {
+        const records = await trainerService.fetchTrainerFitnessProgress(req.params.userId);
+        res.status(200).json(records);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const postFitnessProgress = async (req, res, next) => {
+    try {
+        const record = await trainerService.addFitnessProgress(req.params.userId, req.body);
+        res.status(201).json(record);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteFitnessProgress = async (req, res, next) => {
+    try {
+        const message = await trainerService.removeFitnessProgress(req.params.progressId);
+        res.status(200).json({ message });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getClientFitnessProgress = async (req, res, next) => {
+    try {
+        const records = await trainerService.fetchClientFitnessProgress(req.params.userId);
+        res.status(200).json(records);
+    } catch (error) {
+        next(error);
+    }
+};
