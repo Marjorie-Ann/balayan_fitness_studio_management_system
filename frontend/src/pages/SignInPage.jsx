@@ -41,13 +41,12 @@ const SignInPage = ({ onGoToChangePassword, onLoginSuccess, initialMessage = "" 
         return;
       }
 
-      const loggedName = data.trainer?.full_name || data.trainer?.username || username;
       setUsername("");
       setPassword("");
       setShowPassword(false);
 
       if (onLoginSuccess) {
-        onLoginSuccess(loggedName);
+        onLoginSuccess(data.trainer);
       }
     } catch (error) {
       setStatus({

@@ -17,3 +17,19 @@ export const updatePassword = async (userId, hashedPassword) => {
     );
     return result.affectedRows;
 };
+
+export const getNotificationsByUserId = async (userId) => {
+    const [rows] = await db.query(
+        'SELECT notification_id AS id, notification_type AS type, message AS text, notification_date AS date, is_read AS `read` FROM notifications WHERE user_id = ? ORDER BY notification_date DESC',
+        [userId]
+    );
+    return rows;
+};
+
+export const markNotificationsAsRead = async (userId) => {
+    const [result] = await db.query(
+        'UPDATE notifications SET is_read = 1 WHERE user_id = ?',
+        [userId]
+    );
+    return result;
+};
