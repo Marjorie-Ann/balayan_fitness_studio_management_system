@@ -2,13 +2,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-size: normal;
-    font-family: 'Georgia', serif;
+    font-family: 'Arial', serif;
 }
 
 body {
     padding: 0;
-    margin: 0; 
+    margin: 0;
 }
 
 .image {
@@ -141,19 +140,6 @@ header > small {
     color: #4ade80;
 }
 
-/* ===== DASHBOARD PAGE ===== */
-/* Siguraduhing sagad sa buong screen ang root at body */
-
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-
 .app-wrapper {
   min-height: 100vh;
   padding: 50px 20px;
@@ -172,10 +158,11 @@ body,
 }
 
 .dash-header {
-  background: #111;
+  background: #000000;
   color: #fff;
-  border-bottom: 3px solid rgb(232, 188, 46);
+  border-bottom: 3px solid #d4af37;
   padding: 15px 25px;
+  margin: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -264,6 +251,7 @@ body,
   border-left: 4px solid rgb(232, 188, 46);
   padding: 14px;
   border-radius: 4px;
+  text-align: center;
 }
 
 .summary-card span {
@@ -406,7 +394,6 @@ body,
   outline: none;
 }
 
-/* Full-screen layout para sa Dashboard */
 /* Full-screen layout para sa Dashboard */
 .dash-wrapper {
   width: 100%;
@@ -666,37 +653,47 @@ body,
 }
 
 .avail-form {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr auto 1fr 1fr;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .avail-form select,
 .avail-form input {
-  height: 40px;
+  width: 100%;
+  height: 44px;
   padding: 0 12px;
   border: 1px solid #d4af37;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
   background-color: #ffffff;
   color: #000000;
   box-sizing: border-box;
+  margin: 0;
 }
 
 .avail-form select {
-  min-width: 240px;
   cursor: pointer;
 }
 
+.avail-form span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .avail-form button {
-  height: 40px;
+  height: 44px;
   padding: 0 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
+  border-radius: 8px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .avail-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Dashboard Spacing & Utility Classes */
@@ -765,7 +762,7 @@ body,
   background-color: #ffffff;
   color: #000000;
   font-family: inherit;
-  font-size: 14px; 
+  font-size: 14px;
   box-sizing: border-box;
   outline: none;
   margin: 0;
@@ -850,4 +847,47 @@ body,
 .bmi-obese {
   background-color: #ffebee;
   color: #b71c1c;
+}
+
+/* Top Dashboard Summary Cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background-color: #ffffff;
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-value {
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  padding: 14px 16px;
+}
+
+@media (max-width: 900px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.status-accepted {
+  color: #16a34a;
+}
+
+.status-rejected {
+  color: #dc2626;
+}
+
+.status-pending {
+  color: #d97706;
 }
