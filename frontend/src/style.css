@@ -15,7 +15,126 @@ body {
     height: 100px;
     border-radius: 50%;
     display: block;
-    margin: 0 auto 14px auto;
+    margin: 0 auto 18px auto;
+    object-fit: cover;
+}
+
+/* ================= WELCOME PAGE ================= */
+.welcome-screen {
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at top, #1a1608 0%, #0a0a0a 55%, #000000 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.welcome-content {
+  max-width: 720px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-title {
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #ffffff;
+  margin-bottom: 18px;
+  letter-spacing: -0.5px;
+}
+
+.welcome-title span {
+  color: #d4af37;
+}
+
+.welcome-subtitle {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #bdbdbd;
+  max-width: 560px;
+  margin-bottom: 34px;
+}
+
+.welcome-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-welcome-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d4af37;
+  color: #000000;
+  border-radius: 10px;
+  padding: 9px 42px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}.btn-welcome-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d4af37;
+  color: #000000;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 9px 42px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-welcome-login:hover {
+  background-color: #e5c158;
+}
+
+
+.back-welcome-wrap {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.back-welcome-link {
+  color: #000000;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.back-welcome-link:hover {
+  color: #b59228;
+}
+
+@media (max-width: 600px) {
+  .welcome-title {
+    font-size: 32px;
+  }
+
+  .welcome-subtitle {
+    font-size: 14px;
+  }
+}
+
+.welcome-header-img {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  border: none;
+  box-shadow: none;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  object-fit: contain;
+  display: block;
 }
 
 header {
