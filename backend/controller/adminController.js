@@ -303,3 +303,30 @@ export const getAllAttendance = async (req, res) => {
         });
     }
 };
+
+// ==========================================
+// ADMIN LOGIN + CLIENT QR IMAGE 
+// ==========================================
+export const adminLogin = async (req, res) => {
+    try {
+        const admin = await adminService.adminLogin(req.body || {});
+        res.status(200).json({ success: true, message: "Login successful.", data: admin });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: "Login failed.", error: error.message });
+    }
+};
+
+export const getClientQr = async (req, res) => {
+    try {
+        const qr = await adminService.getClientQr(req.params.id);
+        res.status(200).json({ success: true, message: "QR code generated.", data: qr });
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: "Failed to generate QR code.", error: error.message });
+    }
+};

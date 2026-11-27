@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import QRCode from "qrcode";
 import * as adminModel from "../models/adminModel.js";
+import validator from "validator";
 import ValidationError from "../utils/ValidationError.js";
 
 // ==================== DASHBOARD SUMMARY (1.1.1) ====================
@@ -29,6 +30,18 @@ export const getAllClients = async () => {
 
 // ==================== ACCOUNT CREATION (1.2) ====================
 
+const validateAccountFields = ({ email, contact_number, password }) => {
+    if (!validator.isEmail(String(email))) {
+        throw new ValidationError("Improper email format.", 400);
+    }
+    if (!validator.isNumeric(String(contact_number), { no_symbols: true }) || String(contact_number).length > 11) {
+        throw new ValidationError("Contact number must be digits only, up to 11 digits.", 400);
+    }
+    if (!validator.isStrongPassword(String(password))) {
+        throw new ValidationError("Password is not strong enough. Use at least 8 characters with uppercase, lowercase, a number and a symbol.", 400);
+    }
+};
+
 // 1.2.1 Create Client Account
 export const createClientAccount = async (data) => {
     const { full_name, email, contact_number, username, password } = data;
@@ -37,6 +50,9 @@ export const createClientAccount = async (data) => {
     if (!full_name || !email || !contact_number || !username || !password) {
         throw new ValidationError("All fields (full_name, email, contact_number, username, password) are required.");
     }
+
+    // Check email, contact number at password
+    validateAccountFields({ email, contact_number, password });
 
     // 2. Check contact_number length (varchar(11) sa database)
     if (contact_number.length > 11) {
@@ -94,6 +110,9 @@ export const createTrainerAccount = async (data) => {
         throw new ValidationError("All fields (full_name, email, contact_number, username, password) are required.");
     }
 
+    // Check email, contact number, at password format
+    validateAccountFields({ email, contact_number, password });
+
     // 2. Check contact_number length (varchar(11) sa database)
     if (contact_number.length > 11) {
         throw new ValidationError("Contact number must not exceed 11 digits.");
@@ -132,28 +151,24 @@ export const createTrainerAccount = async (data) => {
     };
 };
 
+
+
 // ==========================================
 // 1.3 MEMBERSHIP MANAGEMENT SERVICES
 // ==========================================
 
 // Helper: 1.3.2 Determine Active or Expired status from start_date & expiration_date
 const computeMembershipStatus = (startDateStr, expirationDateStr) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const start = new Date(startDateStr);
-    const expiration = new Date(expirationDateStr);
-
-    if (isNaN(start.getTime()) || isNaN(expiration.getTime())) {
+    const startRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!startRegex.test(startDateStr) || !startRegex.test(expirationDateStr)) {
         throw new ValidationError("Invalid start_date or expiration_date format. Use YYYY-MM-DD.", 400);
     }
-
-    if (expiration < start) {
+    if (expirationDateStr < startDateStr) {
         throw new ValidationError("Expiration date cannot be earlier than start date.", 400);
     }
-
-    // Active if expiration date is today or in the future
-    return expiration >= today ? "Active" : "Expired";
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    return expirationDateStr >= todayStr ? "Active" : "Expired";
 };
 
 // 1.3.1 Create Membership Record
@@ -224,6 +239,11 @@ export const deleteUserAccount = async (userId) => {
     if (!existingUser) {
         throw new ValidationError("User account not found.", 404);
     }
+
+    if (existingUser.role === "Admin") {
+        throw new ValidationError("The single Admin account cannot be deleted.", 403);
+    }
+    
     await adminModel.deleteUserById(userId);
     return { user_id: existingUser.user_id, username: existingUser.username, role: existingUser.role };
 };
@@ -388,4 +408,31 @@ export const scanQrAttendance = async (qrCodeInput) => {
 // 1.5.2 View and Search Attendance Records
 export const getAllAttendance = async (filters) => {
     return await adminModel.getAllAttendance(filters);
+};
+
+// ==========================================
+// ADMIN LOGIN + CLIENT QR IMAGE (idinagdag para sa frontend)
+// ==========================================
+export const adminLogin = async ({ username, password }) => {
+    if (!username || !password) {
+        throw new ValidationError("Username and password are required.", 400);
+    }
+    const user = await adminModel.findAdminByUsername(username);
+    const ok = user ? await bcrypt.compare(password, user.password) : false;
+    if (!ok) {
+        throw new ValidationError("Invalid username or password.", 401);
+    }
+    if (user.account_status !== "Active") {
+        throw new ValidationError("Account is inactive.", 403);
+    }
+    return { user_id: user.user_id, username: user.username, role: user.role };
+};
+
+export const getClientQr = async (clientId) => {
+    const client = await adminModel.findClientById(clientId);
+    if (!client) {
+        throw new ValidationError("Client not found.", 404);
+    }
+    const qr_code_image = await QRCode.toDataURL(client.qr_code, { width: 600, margin: 2 });
+    return { client_id: client.client_id, full_name: client.full_name, qr_code: client.qr_code, qr_code_image };
 };
