@@ -13,10 +13,15 @@ import {
     getAllPayments,
     confirmCashPayment,
     scanQrAttendance,
-    getAllAttendance
+    getAllAttendance,
+    adminLogin,
+    getClientQr
 } from "../controller/adminController.js";
 
 const router = express.Router();
+
+// Admin login (bago) - walang admin login sa original backend
+router.post("/login", adminLogin);
 
 // 1.1.1 Display Dashboard Summary
 router.get("/dashboard-summary", getDashboardSummary);
@@ -24,6 +29,7 @@ router.get("/dashboard-summary", getDashboardSummary);
 // 1.2.1 Create Client Account
 router.post("/clients", createClientAccount);
 router.get("/clients", getAllClients);
+router.get("/clients/:id/qr", getClientQr);
 
 // 1.2.2 Create Trainer Account
 router.post("/trainers", createTrainerAccount);

@@ -142,9 +142,9 @@ export const getAllClients = async () => {
             c.email,
             c.contact_number,
             c.qr_code,
-            u.account_status
+            COALESCE(u.account_status, 'Active') AS account_status
         FROM clients c
-        INNER JOIN users u ON c.user_id = u.user_id
+        LEFT JOIN users u ON c.user_id = u.user_id
         ORDER BY c.full_name ASC
     `);
     return rows;
@@ -502,4 +502,13 @@ export const getAllAttendance = async ({ search, date } = {}) => {
 
     const [rows] = await db.query(query, params);
     return rows;
+};
+
+// Admin login lookup (users table, role = Admin)
+export const findAdminByUsername = async (username) => {
+    const [rows] = await db.query(
+        "SELECT user_id, username, password, role, account_status FROM users WHERE username = ? AND role = 'Admin'",
+        [username]
+    );
+    return rows[0];
 };
